@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Home"
+        android:icon="@drawable/baseline_home_24"
+        android:id="@+id/adminNav_home"/>
+    <item
+        android:id="@+id/adminNav_scan"
+        android:icon="@drawable/package_2_fill0_wght400_grad0_opsz24"
+        android:title="Package Hub" />
+    <item android:title="Settings"
+        android:icon="@drawable/baseline_engineering_24"
+        android:id="@+id/adminNav_settings"/>
+</menu>

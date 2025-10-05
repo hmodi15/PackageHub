@@ -1,0 +1,212 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > ImageController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">onetomany.Images</a>
+</div>
+
+<h1>Coverage Summary for Class: ImageController (onetomany.Images)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ImageController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package onetomany.Images;
+&nbsp;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import onetomany.Labels.LabelRepository;
+&nbsp;import onetomany.Labels.Label_Image;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import net.sourceforge.tess4j.Tesseract;
+&nbsp;import net.sourceforge.tess4j.TesseractException;
+&nbsp;
+&nbsp;import javax.imageio.ImageIO;
+&nbsp;import java.awt.image.BufferedImage;
+&nbsp;import java.io.File;
+&nbsp;import java.io.IOException;
+&nbsp;import java.nio.file.Files;
+&nbsp;
+&nbsp;@RestController
+<b class="nc">&nbsp;public class ImageController {</b>
+&nbsp;
+&nbsp;    // replace this! careful with the operating system in use
+<b class="nc">&nbsp;    private static String directory = &quot;../../../../../../../home/benjbart/imgfolder&quot;;//&quot;src/main/resources/imgfolder&quot;;//&quot;\\src\\main\\resources\\imgfolder&quot;;</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private ImageRepository imageRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private LabelRepository labelRepository;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get the byte array for the image from the provided Id&quot;)
+&nbsp;    @GetMapping(value = &quot;/images/{id}&quot;, produces = MediaType.IMAGE_JPEG_VALUE)
+&nbsp;    byte[] getImageById(@PathVariable int id) throws IOException {
+<b class="nc">&nbsp;        Image image = imageRepository.findById(id);</b>
+<b class="nc">&nbsp;        File imageFile = new File(image.getFilePath());</b>
+<b class="nc">&nbsp;        return Files.readAllBytes(imageFile.toPath());</b>
+&nbsp;    }
+&nbsp;/*
+&nbsp;    @PostMapping(&quot;images&quot;)
+&nbsp;    public String handleFileUpload(@RequestParam(&quot;image&quot;) MultipartFile imageFile)  {
+&nbsp;
+&nbsp;        try {
+&nbsp;            File destinationFile = new File(directory + File.separator + imageFile.getOriginalFilename());
+&nbsp;            imageFile.transferTo(destinationFile);  // save file to disk
+&nbsp;
+&nbsp;            Image image = new Image();
+&nbsp;            image.setFilePath(destinationFile.getAbsolutePath());
+&nbsp;            imageRepository.save(image);
+&nbsp;
+&nbsp;            return &quot;File uploaded successfully: &quot; + destinationFile.getAbsolutePath();
+&nbsp;        } catch (IOException e) {
+&nbsp;            return &quot;Failed to upload file: &quot; + e.getMessage();
+&nbsp;        }
+&nbsp;    }*/
+&nbsp;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Process an image from the provided Id with Tesseract and return the string from Tesseract&quot;)
+&nbsp;    @GetMapping(value = &quot;/images/OCR/{id}&quot;)
+&nbsp;    String processImageOCRById(@PathVariable int id) throws IOException {
+<b class="nc">&nbsp;        Label_Image image = labelRepository.findById(id);</b>
+<b class="nc">&nbsp;        File imageFile = new File(image.getFilePath());</b>
+<b class="nc">&nbsp;        Tesseract tesseract = new Tesseract();</b>
+&nbsp;        try {
+&nbsp;            //the path of your &#39;tessdata&#39; folder
+<b class="nc">&nbsp;            tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</b>
+&nbsp;            //inside the extracted file
+<b class="nc">&nbsp;            String text = tesseract.doOCR(imageFile);</b>
+&nbsp;            //path of the image file
+&nbsp;            //System.out.print(text);
+<b class="nc">&nbsp;            return text;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        catch (TesseractException e) {</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Process the provided image with Tesseract and return the string from Tesseract&quot;)
+&nbsp;    @PostMapping(&quot;/images&quot;)
+&nbsp;    public String processPackageLabelOCR(@RequestParam(&quot;image&quot;) MultipartFile imageFile)  {
+<b class="nc">&nbsp;        Tesseract tesseract = new Tesseract();</b>
+<b class="nc">&nbsp;        tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            File destinationFile = new File(directory + File.separator + imageFile.getOriginalFilename());</b>
+<b class="nc">&nbsp;            imageFile.transferTo(destinationFile);  // save file to disk</b>
+&nbsp;
+<b class="nc">&nbsp;            Image image = new Image();</b>
+<b class="nc">&nbsp;            image.setFilePath(destinationFile.getAbsolutePath());</b>
+&nbsp;
+&nbsp;            try {
+<b class="nc">&nbsp;                String ocrResult = tesseract.doOCR(destinationFile);</b>
+&nbsp;                //Some things to sort out the specific text from the result
+<b class="nc">&nbsp;                return ocrResult;</b>
+<b class="nc">&nbsp;            } catch (TesseractException e) {</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            return &quot;Failed to upload file: &quot; + e.getMessage();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-19 19:11</div>
+</div>
+</body>
+</html>

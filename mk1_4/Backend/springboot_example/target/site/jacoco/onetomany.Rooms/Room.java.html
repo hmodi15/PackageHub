@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Room.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Rooms</a> &gt; <span class="el_source">Room.java</span></div><h1>Room.java</h1><pre class="source lang-java linenums">package onetomany.Rooms;
+
+import jakarta.persistence.*;
+import onetomany.Buildings.BuildingRepository;
+import onetomany.Buildings.Buildings;
+import onetomany.Packages.Package;
+import onetomany.Users.User;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+/**
+ * @author Benjamin Bartels
+ */
+@Entity
+public class Room {
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private int id;
+    private String aptNum;
+    private String address;
+    private String buildingName;
+    private int maxTenants;
+
+
+    //the list of users of a room
+    @OneToMany(mappedBy = &quot;room&quot;)
+    private List&lt;User&gt; users;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;building_id&quot;, updatable = true)
+    @JsonIgnore
+    private Buildings building;
+
+
+    // =============================== Constructors ================================== //
+
+<span class="nc" id="L41">    public Room(){this.users = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L42">    }</span>
+
+<span class="nc" id="L44">    public Room(String aptNum, String address, String buildingName, int maxTenants){</span>
+<span class="nc" id="L45">        this.aptNum = aptNum;</span>
+<span class="nc" id="L46">        this.address = address;</span>
+<span class="nc" id="L47">        this.buildingName = buildingName;</span>
+<span class="nc" id="L48">        this.maxTenants = maxTenants;</span>
+<span class="nc" id="L49">        users = new ArrayList&lt;&gt;();</span>
+        //building = BuildingRepository.findByName(buildingName);
+<span class="nc" id="L51">    }</span>
+
+<span class="nc" id="L53">    public Room( String aptNum, String address, Buildings building, int maxTenants){</span>
+<span class="nc" id="L54">        this.aptNum = aptNum;</span>
+<span class="nc" id="L55">        this.address = address;</span>
+<span class="nc" id="L56">        this.building = building;</span>
+<span class="nc" id="L57">        this.buildingName = building.getName();</span>
+<span class="nc" id="L58">        this.maxTenants = maxTenants;</span>
+<span class="nc" id="L59">        users = new ArrayList&lt;User&gt;();</span>
+        //building = BuildingRepository.findByName(buildingName);
+<span class="nc" id="L61">    }</span>
+
+
+
+    // =============================== Getters and Setters for each field ================================== //
+
+
+    public int getId() {
+<span class="nc" id="L69">        return id;</span>
+    }
+
+    public void setId(int id) {
+<span class="nc" id="L73">        this.id = id;</span>
+<span class="nc" id="L74">    }</span>
+
+    public String getAptNum() {
+<span class="nc" id="L77">        return aptNum;</span>
+    }
+
+    public void setAptNum(String aptNum) {
+<span class="nc" id="L81">        this.aptNum = aptNum;</span>
+<span class="nc" id="L82">    }</span>
+
+    public String getAddress() {
+<span class="nc" id="L85">        return address;</span>
+    }
+
+    public void setAddress(String address) {
+<span class="nc" id="L89">        this.address = address;</span>
+<span class="nc" id="L90">    }</span>
+
+    public String getBuildingName() {
+<span class="nc" id="L93">        return buildingName;</span>
+    }
+
+    public void setBuildingName(String buildingName) {
+<span class="nc" id="L97">        this.buildingName = buildingName;</span>
+<span class="nc" id="L98">    }</span>
+
+    public Buildings getBuilding() {
+<span class="nc" id="L101">        return building;</span>
+    }
+
+    public void setBuilding(Buildings building) {
+<span class="nc" id="L105">        this.building = building;</span>
+<span class="nc" id="L106">        this.buildingName = building.getName();</span>
+<span class="nc" id="L107">    }</span>
+
+    public int getMaxTenants() {
+<span class="nc" id="L110">        return maxTenants;</span>
+    }
+
+    public void setMaxTenants(int maxTenants) {
+<span class="nc" id="L114">        this.maxTenants = maxTenants;</span>
+<span class="nc" id="L115">    }</span>
+
+    public List&lt;User&gt; getUsers() {
+<span class="nc" id="L118">        return users;</span>
+    }
+
+    public void setUsers(List&lt;User&gt; users) {
+<span class="nc" id="L122">        this.users = users;</span>
+<span class="nc" id="L123">    }</span>
+
+    public void addUser(User user){
+<span class="nc" id="L126">        this.users.add(user);</span>
+<span class="nc" id="L127">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

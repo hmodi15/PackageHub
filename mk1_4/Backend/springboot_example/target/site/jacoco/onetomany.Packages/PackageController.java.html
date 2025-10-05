@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PackageController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Packages</a> &gt; <span class="el_source">PackageController.java</span></div><h1>PackageController.java</h1><pre class="source lang-java linenums">package onetomany.Packages;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Date;
+
+
+import javax.imageio.ImageIO;
+import javax.sql.rowset.serial.SerialBlob;
+import jakarta.transaction.Transactional;
+
+
+import io.swagger.v3.oas.annotations.Operation;
+
+import jakarta.transaction.Transactional;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
+
+
+import onetomany.Buildings.BuildingRepository;
+import onetomany.Buildings.Buildings;
+import onetomany.Credentials.CredentialsRepository;
+import onetomany.Credentials.Credentials;
+import onetomany.Labels.LabelRepository;
+import onetomany.Labels.Label_Image;
+import onetomany.Rooms.RoomRepository;
+import onetomany.Rooms.Room;
+import onetomany.Users.UserRepository;
+import onetomany.Users.User;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import org.apache.commons.io.FileUtils;
+
+
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.*;
+import com.google.zxing.MultiFormatReader;
+
+
+@RestController
+<span class="nc" id="L51">public class PackageController {</span>
+
+<span class="nc" id="L53">    private static String directory = &quot;../../../../../../../home/hmodi/img&quot;;//&quot;src/main/resources/imgfolder&quot;;//&quot;\\src\\main\\resources\\imgfolder&quot;;</span>
+
+    @Autowired
+    BuildingRepository buildingRepository;
+
+    @Autowired
+    RoomRepository roomRepository;
+
+    @Autowired
+    LabelRepository labelRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    PackageRepository packageRepository;
+
+    @Autowired
+    CredentialsRepository credentialsRepository;
+
+<span class="nc" id="L73">    private String success = &quot;{\&quot;message\&quot;:\&quot;success\&quot;}&quot;;</span>
+<span class="nc" id="L74">    private String failure = &quot;{\&quot;message\&quot;:\&quot;failure\&quot;}&quot;;</span>
+
+    @Operation(summary = &quot;Get a list of all the packages&quot;)
+    @GetMapping(path = &quot;/packages&quot;)
+    List&lt;Package&gt; getAllPackage(){
+<span class="nc" id="L79">        return packageRepository.findAll();</span>
+    }
+
+    @Operation(summary = &quot;Get a specific package via id&quot;)
+    @GetMapping(path = &quot;/packages/{id}&quot;)
+    Package getPackageById( @PathVariable int id){
+<span class="nc" id="L85">        return packageRepository.findById(id);</span>
+    }
+
+
+    @Operation(summary = &quot;Get the newest package via email&quot;)
+    @GetMapping(path = &quot;/users/package/{email}&quot;)
+    Package getNewestPackageByEmail( @PathVariable String email){
+<span class="nc" id="L92">        Credentials userCred = credentialsRepository.findByemailId(email);</span>
+<span class="nc" id="L93">        User user = userRepository.findBycredentials(userCred);</span>
+<span class="nc" id="L94">        Package newPkg = new Package();</span>
+<span class="nc" id="L95">        int i = 0;</span>
+<span class="nc" id="L96">        List&lt;Package&gt; packages = user.getPackages();</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if(packages.isEmpty()){</span>
+<span class="nc" id="L98">            new Package(&quot;NO PACKAGES&quot;);</span>
+        }
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        for(Package pkg : packages){</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            if(i == 0){</span>
+<span class="nc" id="L102">                newPkg = pkg;</span>
+<span class="nc" id="L103">                i++;</span>
+            }
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            else if(pkg.getid() &gt; newPkg.getid()){</span>
+<span class="nc" id="L106">                newPkg = pkg;</span>
+            }
+<span class="nc" id="L108">        }</span>
+<span class="nc" id="L109">        return newPkg;</span>
+    }
+
+    @Operation(summary = &quot;Get all packages via user's email&quot;)
+    @GetMapping(path = &quot;/users/packages/{email}&quot;)
+    List&lt;Package&gt; getPackageByEmail(@PathVariable String email){
+<span class="nc" id="L115">        Credentials userCred = credentialsRepository.findByemailId(email);</span>
+<span class="nc" id="L116">        User user = userRepository.findBycredentials(userCred);</span>
+<span class="nc" id="L117">        return user.getPackages();</span>
+    }
+
+    @Operation(summary = &quot;Create an empty package object&quot;)
+    @PostMapping(path = &quot;/packages&quot;)
+    String createPackage(){
+<span class="nc" id="L123">        Package pack = new Package();</span>
+<span class="nc" id="L124">        pack.setScan_Date_Str(new Date());</span>
+<span class="nc" id="L125">        packageRepository.save(pack);</span>
+<span class="nc" id="L126">        return success;</span>
+    }
+
+    @Operation(summary = &quot;Changes the package pickup status&quot;)
+    @PutMapping(path = &quot;/packages/pickup/{id}&quot;)
+    String changePackagePickUpStatus(@PathVariable int id){
+<span class="nc" id="L132">        Package pack = packageRepository.findById(id);</span>
+<span class="nc" id="L133">        pack.changePickUpStatus();</span>
+<span class="nc" id="L134">        packageRepository.save(pack);</span>
+<span class="nc" id="L135">        return success + &quot;\nPickup status is now: &quot; + pack.getPickUpStatus();</span>
+    }
+
+    @Operation(summary = &quot;Create an package object from parameters sent with the URL&quot;)
+    @PostMapping(path = &quot;/packages/create&quot;)
+    String createCustomPackage(@RequestParam String name, @RequestParam String pickUpCode){
+<span class="nc" id="L141">        String address = &quot;Iowa State&quot;;</span>
+<span class="nc" id="L142">        Package pack = new Package(name, pickUpCode, address);</span>
+<span class="nc" id="L143">        packageRepository.save(pack);</span>
+        try {
+<span class="nc" id="L145">            User user = userRepository.findByname(name);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            if (user.getName().equals(name)) {</span>
+<span class="nc" id="L147">                user.addPackages(pack);</span>
+<span class="nc" id="L148">                pack.setUser(user);</span>
+<span class="nc" id="L149">                pack.setAddress(user.getAddress());</span>
+<span class="nc" id="L150">                pack.setAptNum(user.getAptNum());</span>
+<span class="nc" id="L151">                pack.setScan_Date_Str(new Date());</span>
+<span class="nc" id="L152">                packageRepository.save(pack);</span>
+<span class="nc" id="L153">                userRepository.save(user);</span>
+            }
+<span class="nc" id="L155">        } catch(Exception e) {return failure;}</span>
+<span class="nc" id="L156">        return success;</span>
+    }
+
+    @Operation(summary = &quot;Create an package object from parameters sent with the URL&quot;)
+    @PostMapping(path = &quot;/packages/create/{name}&quot;)
+    String createCustomPackageWithName(@PathVariable String name){
+<span class="nc" id="L162">        Package pack = new Package(name);</span>
+<span class="nc" id="L163">        packageRepository.save(pack);</span>
+        try {
+<span class="nc" id="L165">            User user = userRepository.findByname(name);</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            if (user.getName().equals(name)) {</span>
+<span class="nc" id="L167">                user.addPackages(pack);</span>
+<span class="nc" id="L168">                pack.setUser(user);</span>
+<span class="nc" id="L169">                pack.setAddress(user.getAddress());</span>
+<span class="nc" id="L170">                pack.setAptNum(user.getAptNum());</span>
+<span class="nc" id="L171">                pack.setScan_Date_Str(new Date());</span>
+<span class="nc" id="L172">                packageRepository.save(pack);</span>
+<span class="nc" id="L173">                userRepository.save(user);</span>
+            }
+<span class="nc" id="L175">        } catch(Exception e) {return failure;}</span>
+<span class="nc" id="L176">        return success;</span>
+    }
+
+    @Operation(summary = &quot;Create a package by processing an image and give it a specified id number&quot;)
+    @PostMapping(path = &quot;/packages/OCR/{id}&quot;)
+    String createCustomPackage(@PathVariable int id, @RequestParam(&quot;image&quot;) MultipartFile imageFile){
+<span class="nc" id="L182">        Tesseract tesseract = new Tesseract();</span>
+        //tesseract.setDatapath(&quot;../../../../src/main/resources/tess4j-4.5.1/tessdata&quot;);	//for testing locally. The files required for this function are not included in this repo
+<span class="nc" id="L184">        tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</span>
+        try {
+<span class="nc" id="L186">            File destinationFile = new File(directory + File.separator + imageFile.getOriginalFilename());</span>
+<span class="nc" id="L187">            imageFile.transferTo(destinationFile);  // save file to disk</span>
+<span class="nc" id="L188">            byte[] byteArray = FileUtils.readFileToByteArray(destinationFile);</span>
+<span class="nc" id="L189">            Label_Image image = new Label_Image();</span>
+<span class="nc" id="L190">            image.setFilePath(destinationFile.getAbsolutePath());</span>
+<span class="nc" id="L191">            SerialBlob label_img = new SerialBlob(byteArray);</span>
+<span class="nc" id="L192">            image.setImageBlob(label_img);</span>
+            //tracking number scanning
+<span class="nc" id="L194">            BufferedImage img = ImageIO.read(new ByteArrayInputStream(label_img.getBytes(1,(int)label_img.length())));</span>
+<span class="nc" id="L195">            String trackingNum = &quot;not found&quot;;</span>
+<span class="nc" id="L196">            boolean trackingFound = false;</span>
+<span class="nc" id="L197">            int startH = 0;</span>
+            //tracking number scanning
+            try {
+<span class="nc" id="L200">                String ocrResult = tesseract.doOCR(img);</span>
+<span class="nc" id="L201">                StringBuilder filtered = new StringBuilder(filterOCRResult(ocrResult));</span>
+<span class="nc" id="L202">                filtered = new StringBuilder(filtered + &quot;|&quot; + &quot;|&quot; + &quot;|&quot; + &quot;|&quot;);</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">                if(String.valueOf(filtered).contains(failure)){</span>
+<span class="nc" id="L204">                    return failure + &quot;failed to gather all needed information. NO Package will be made.\nInformation Gathered:\n&quot; + filtered;</span>
+                }
+<span class="nc" id="L206">                String rawFiltered = String.valueOf(filtered);</span>
+<span class="nc" id="L207">                String address = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+<span class="nc" id="L208">                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</span>
+<span class="nc" id="L209">                filtered.deleteCharAt(0);</span>
+<span class="nc" id="L210">                String aptNum = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+<span class="nc" id="L211">                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</span>
+<span class="nc" id="L212">                filtered.deleteCharAt(0);</span>
+<span class="nc" id="L213">                String name = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+<span class="nc" id="L214">                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</span>
+<span class="nc" id="L215">                filtered.deleteCharAt(0);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                if(String.valueOf(filtered).startsWith(&quot;9&quot;)){</span>
+<span class="nc" id="L217">                    trackingNum = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+                }
+                else{	// searching for the tracking number if its not a USPS package
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                    while(!trackingFound){</span>
+                        try{
+<span class="nc bnc" id="L222" title="All 2 branches missed.">                            if(img.getHeight() &gt; startH){</span>
+<span class="nc" id="L223">                                System.out.println(&quot;main:&quot; + startH);</span>
+<span class="nc" id="L224">                                trackingNum = readAndFilterTrackingNumber(img, startH);</span>
+<span class="nc" id="L225">                                System.out.println(trackingNum);</span>
+<span class="nc" id="L226">                                trackingFound = true;</span>
+<span class="nc bnc" id="L227" title="All 6 branches missed.">                                if((trackingFound = true) &amp;&amp; (String.valueOf(filtered).startsWith(&quot;U&quot;) &amp;&amp; (!trackingNum.startsWith(&quot;1Z&quot;)))){</span>
+<span class="nc" id="L228">                                    trackingFound = false;</span>
+<span class="nc" id="L229">                                    trackingNum = &quot;&quot;;</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">                                    if(img.getHeight() &gt; startH){</span>
+<span class="nc" id="L231">                                        startH += 500;</span>
+                                    }
+                                    else{
+<span class="nc" id="L234">                                        trackingNum = &quot;not found&quot;;</span>
+<span class="nc" id="L235">                                        trackingFound = true;</span>
+                                    }
+                                }
+                            }
+                            else{
+<span class="nc" id="L240">                                trackingNum = &quot;not found&quot;;</span>
+                            }
+<span class="nc" id="L242">                        } catch (ChecksumException | FormatException e) {</span>
+<span class="nc" id="L243">                            throw new RuntimeException(e);</span>
+<span class="nc" id="L244">                        } catch (NotFoundException e) {</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                            if(img.getHeight() &gt; startH){</span>
+<span class="nc" id="L246">                                startH += 500;</span>
+                            }
+                            else{
+<span class="nc" id="L249">                                trackingNum = &quot;not found&quot;;</span>
+                            }
+<span class="nc" id="L251">                        }</span>
+                    }
+                }
+                //finished extracting the data from The filtered Tesseract result &amp; ZXing
+
+<span class="nc" id="L256">                User user = userRepository.findByname(name);</span>
+<span class="nc" id="L257">                Package pack = new Package(user, address, aptNum, trackingNum, label_img, rawFiltered);</span>
+<span class="nc" id="L258">                pack.setScan_Date_Str(new Date());</span>
+<span class="nc" id="L259">                pack.setid(id);</span>
+<span class="nc" id="L260">                packageRepository.save(pack);</span>
+                //Some things to sort out the specific text from the result
+                //System.out.println(ocrResult + &quot;\n\nPackage_id:&quot; + pack.getid() + &quot;\n\n filtered OCR result:&quot; + rawFiltered);
+<span class="nc" id="L263">                return ocrResult + &quot;\n\nPackage_id:&quot; + pack.getid() + &quot;\n\n filtered OCR result:&quot; + rawFiltered;</span>
+<span class="nc" id="L264">            } catch (TesseractException e) {</span>
+<span class="nc" id="L265">                e.printStackTrace();</span>
+            }
+<span class="nc" id="L267">        } catch (IOException e) {</span>
+<span class="nc" id="L268">            return &quot;Failed to upload file: &quot; + e.getMessage();</span>
+<span class="nc" id="L269">        } catch (SQLException e) {</span>
+<span class="nc" id="L270">            throw new RuntimeException(e);</span>
+<span class="nc" id="L271">        }</span>
+<span class="nc" id="L272">        return failure;</span>
+    }
+
+
+
+    @Operation(summary = &quot;Process the provided image with Tesseract and return the string from Tesseract&quot;)
+    @PostMapping(&quot;/packages/OCR&quot;)
+    public String processPackageLabelOCR(@RequestParam(&quot;image&quot;) MultipartFile imageFile)  {
+<span class="nc" id="L280">        Tesseract tesseract = new Tesseract();</span>
+        //tesseract.setDatapath(&quot;../../../../src/main/resources/tess4j-4.5.1/tessdata&quot;);	//for testing locally. The files required for this function are not included in this repo
+<span class="nc" id="L282">        tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</span>
+        try {
+<span class="nc" id="L284">            File destinationFile = new File(directory + File.separator + imageFile.getOriginalFilename());</span>
+<span class="nc" id="L285">            imageFile.transferTo(destinationFile);  // save file to disk</span>
+<span class="nc" id="L286">            byte[] byteArray = FileUtils.readFileToByteArray(destinationFile);</span>
+<span class="nc" id="L287">            Label_Image image = new Label_Image();</span>
+<span class="nc" id="L288">            image.setFilePath(destinationFile.getAbsolutePath());</span>
+<span class="nc" id="L289">            SerialBlob label_img = new SerialBlob(byteArray);</span>
+<span class="nc" id="L290">            image.setImageBlob(label_img);</span>
+<span class="nc" id="L291">            BufferedImage img = ImageIO.read(new ByteArrayInputStream(label_img.getBytes(1,(int)label_img.length())));</span>
+<span class="nc" id="L292">            String trackingNum = &quot;not found&quot;;</span>
+<span class="nc" id="L293">            boolean trackingFound = false;</span>
+<span class="nc" id="L294">            int startH = 0;</span>
+            //tracking number scanning
+            try {
+<span class="nc" id="L297">                String ocrResult = tesseract.doOCR(img);</span>
+<span class="nc" id="L298">                StringBuilder filtered = new StringBuilder(filterOCRResult(ocrResult));</span>
+<span class="nc" id="L299">                filtered = new StringBuilder(filtered + &quot;|&quot; + &quot;|&quot; + &quot;|&quot; + &quot;|&quot;);</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">                if(String.valueOf(filtered).contains(failure)){</span>
+<span class="nc" id="L301">                    return failure + &quot;failed to gather all needed information. NO Package will be made.\nInformation Gathered:\n&quot; + filtered;</span>
+                }
+<span class="nc" id="L303">                String rawFiltered = String.valueOf(filtered);</span>
+<span class="nc" id="L304">                String address = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+<span class="nc" id="L305">                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</span>
+<span class="nc" id="L306">                filtered.deleteCharAt(0);</span>
+<span class="nc" id="L307">                String aptNum = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+<span class="nc" id="L308">                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</span>
+<span class="nc" id="L309">                filtered.deleteCharAt(0);</span>
+<span class="nc" id="L310">                String name = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+<span class="nc" id="L311">                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</span>
+<span class="nc" id="L312">                filtered.deleteCharAt(0);</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">                if(String.valueOf(filtered).startsWith(&quot;9&quot;)){</span>
+<span class="nc" id="L314">                    trackingNum = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</span>
+                }
+                else{
+<span class="nc bnc" id="L317" title="All 2 branches missed.">                    while(!trackingFound){</span>
+                        try{
+<span class="nc bnc" id="L319" title="All 2 branches missed.">                            if(img.getHeight() &gt; startH){</span>
+<span class="nc" id="L320">                                System.out.println(&quot;main:&quot; + startH);</span>
+<span class="nc" id="L321">                                trackingNum = readAndFilterTrackingNumber(img, startH);</span>
+<span class="nc" id="L322">                                System.out.println(trackingNum);</span>
+<span class="nc" id="L323">                                trackingFound = true;</span>
+<span class="nc bnc" id="L324" title="All 6 branches missed.">                                if((trackingFound) &amp;&amp; (String.valueOf(filtered).startsWith(&quot;U&quot;) &amp;&amp; (!trackingNum.startsWith(&quot;1Z&quot;)))){</span>
+<span class="nc" id="L325">                                    trackingFound = false;</span>
+<span class="nc" id="L326">                                    trackingNum = &quot;&quot;;</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">                                    if(img.getHeight() &gt; startH){</span>
+<span class="nc" id="L328">                                        startH += 500;</span>
+                                    }
+                                    else{
+<span class="nc" id="L331">                                        trackingNum = &quot;not found&quot;;</span>
+<span class="nc" id="L332">                                        trackingFound = true;</span>
+                                    }
+                                }
+                            }
+                            else{
+<span class="nc" id="L337">                                trackingNum = &quot;not found&quot;;</span>
+                            }
+<span class="nc" id="L339">                        } catch (ChecksumException | FormatException e) {</span>
+<span class="nc" id="L340">                            throw new RuntimeException(e);</span>
+<span class="nc" id="L341">                        } catch (NotFoundException e) {</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">                            if(img.getHeight() &gt; startH){</span>
+<span class="nc" id="L343">                                startH += 500;</span>
+                            }
+                            else{
+<span class="nc" id="L346">                                trackingNum = &quot;not found&quot;;</span>
+                            }
+<span class="nc" id="L348">                        }</span>
+                    }
+                }
+
+<span class="nc bnc" id="L352" title="All 4 branches missed.">                if((trackingFound) &amp;&amp; (!String.valueOf(filtered).startsWith(&quot;U&quot;))){ // separates the Fedex tracking number</span>
+<span class="nc" id="L353">                    StringBuilder trackSB = new StringBuilder(trackingNum.substring(trackingNum.length()-16, trackingNum.length()-1));</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">                    while(trackingNum.startsWith(&quot;0&quot;)){</span>
+<span class="nc" id="L355">                        trackSB.deleteCharAt(0);</span>
+                    }
+<span class="nc" id="L357">                    trackingNum = trackSB.toString();</span>
+                }
+                //finished extracting the data from The filtered Tesseract result &amp; ZXing
+
+<span class="nc" id="L361">                User user = userRepository.findByname(name);</span>
+<span class="nc" id="L362">                Package pack = new Package(user, address, aptNum, trackingNum, label_img, rawFiltered);</span>
+<span class="nc" id="L363">                pack.setScan_Date_Str(new Date());</span>
+<span class="nc" id="L364">                packageRepository.save(pack);</span>
+                //Some things to sort out the specific text from the result
+<span class="nc" id="L366">                System.out.println(ocrResult + &quot;\n\nPackage_id:&quot; + pack.getid() + &quot;\n\n filtered OCR result:&quot; + rawFiltered);</span>
+<span class="nc" id="L367">                return ocrResult + &quot;\n\nPackage_id:&quot; + pack.getid() + &quot;\n\n filtered OCR result:&quot; + rawFiltered;</span>
+<span class="nc" id="L368">            } catch (TesseractException e) {</span>
+<span class="nc" id="L369">                e.printStackTrace();</span>
+            }
+<span class="nc" id="L371">        } catch (IOException e) {</span>
+<span class="nc" id="L372">            return &quot;Failed to upload file: &quot; + e.getMessage();</span>
+<span class="nc" id="L373">        } catch (SQLException e) {</span>
+<span class="nc" id="L374">            throw new RuntimeException(e);</span>
+<span class="nc" id="L375">        }</span>
+<span class="nc" id="L376">        return failure;</span>
+    }
+
+    @Operation(summary = &quot;Update a specific package's details&quot;)
+    @PutMapping(&quot;/packages/{id}&quot;)
+    Package updatePackage(@PathVariable int id, @RequestBody Package request){
+<span class="nc" id="L382">        Package pack = packageRepository.findById(id);</span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">        if(pack == null){ return null; }</span>
+<span class="nc" id="L384">        packageRepository.save(request);</span>
+<span class="nc" id="L385">        return packageRepository.findById(id);</span>
+    }
+
+
+    @Operation(summary = &quot;Delete a specific package&quot;)
+    @DeleteMapping(path = &quot;/packages/{id}&quot;)
+    @Transactional
+    public String deletePackage(@PathVariable int id){
+<span class="nc" id="L393">        Package pkg = packageRepository.findById(id);</span>
+<span class="nc" id="L394">        packageRepository.deleteById(pkg.getid());</span>
+<span class="nc" id="L395">        return success;</span>
+    }
+
+    @Operation(summary = &quot;This function is to read the barcode to extract the tracking number of the package&quot;)
+    String readAndFilterTrackingNumber(BufferedImage buffimg, int startHeight) throws ChecksumException, NotFoundException, FormatException {
+        String tracking_num;
+        int h;
+        BufferedImage bufferedimg;
+<span class="nc bnc" id="L403" title="All 2 branches missed.">        if ((startHeight + 500) &lt; buffimg.getHeight()) {</span>
+<span class="nc" id="L404">            h = 500;</span>
+        } else {
+<span class="nc" id="L406">            h = buffimg.getHeight() % 500;</span>
+        }
+<span class="nc" id="L408">        System.out.println(h);</span>
+<span class="nc" id="L409">        bufferedimg = buffimg.getSubimage(0, startHeight, buffimg.getWidth(), h);</span>
+<span class="nc" id="L410">        BufferedImageLuminanceSource bils = new BufferedImageLuminanceSource(bufferedimg);</span>
+<span class="nc" id="L411">        Binarizer binarizer = new HybridBinarizer(bils);</span>
+<span class="nc" id="L412">        BinaryBitmap bbm = new BinaryBitmap(binarizer);</span>
+<span class="nc" id="L413">        Result result = new MultiFormatReader().decode(bbm);</span>
+<span class="nc" id="L414">        tracking_num = result.getText() + &quot; | &quot; + result.getBarcodeFormat();</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        if(tracking_num.contains(&quot;1Z&quot;)){</span>
+<span class="nc" id="L416">            return tracking_num;</span>
+        }
+<span class="nc bnc" id="L418" title="All 2 branches missed.">        else if(tracking_num.length() == 34){</span>
+<span class="nc" id="L419">            tracking_num = tracking_num.substring(21, 33);</span>
+        }
+<span class="nc" id="L421">        return tracking_num;</span>
+    }
+
+
+    @Operation(summary = &quot;Filter the result from Tesseract to get the Address, Apartment Number and Name of the recipient&quot;)
+    String filterOCRResult(String ocrRAWResult){
+        String filtered;
+<span class="nc" id="L428">        String address = &quot;NOT FOUND&quot;;</span>
+<span class="nc" id="L429">        String aptNum = &quot;NOT FOUND&quot;;</span>
+<span class="nc" id="L430">        String name = &quot;NOT FOUND&quot;;</span>
+<span class="nc" id="L431">        String trackingNum = &quot;----&quot;;</span>
+        String lineRAW;
+        String builtAddress;
+        String attemptAptNum;
+        String attemptUserName;
+<span class="nc" id="L436">        char[] charArrayRaw = ocrRAWResult.toCharArray();</span>
+        char[] charArrayAttempt;
+<span class="nc" id="L438">        ArrayList&lt;String&gt; strArrLRAW = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L439">        int[] eIndexes = new int[4];</span>
+<span class="nc" id="L440">        boolean foundE = false;</span>
+<span class="nc" id="L441">        int foundInLine = 0;</span>
+        int lastFound;
+<span class="nc" id="L443">        int i = 0;</span>
+<span class="nc" id="L444">        int attemptNum = 0;</span>
+<span class="nc" id="L445">        int searchMax = 3;</span>
+<span class="nc" id="L446">        int searchMin = 3;</span>
+<span class="nc" id="L447">        double percentFound = 0;</span>
+<span class="nc" id="L448">        StringBuilder temp = new StringBuilder();</span>
+<span class="nc" id="L449">        Buildings rBuilding = new Buildings();</span>
+<span class="nc" id="L450">        Room rRoom = new Room();</span>
+<span class="nc" id="L451">        User rUser = new User();</span>
+<span class="nc bnc" id="L452" title="All 2 branches missed.">        for(i = 0; i &lt; charArrayRaw.length; i++){</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">            if(charArrayRaw[i] == '\n'){</span>
+<span class="nc" id="L454">                strArrLRAW.add(temp.toString());</span>
+<span class="nc" id="L455">                temp = new StringBuilder();</span>
+            }
+<span class="nc bnc" id="L457" title="All 4 branches missed.">            else if((charArrayRaw[i] != ' ') &amp;&amp; (charArrayRaw[i] != '\t')){</span>
+<span class="nc" id="L458">                temp.append(charArrayRaw[i]);</span>
+            }
+        }
+
+<span class="nc" id="L462">        List&lt;Buildings&gt; buildingsList = buildingRepository.findAll();</span>
+        //search for address numbers, then check for first instance of the first character in the street name, if it
+        // can't be found check the second and so on, then check how well the street names match up.
+        // then check for apt numbers. in the vincinity of the address,
+
+<span class="nc bnc" id="L467" title="All 2 branches missed.">        for(Buildings built : buildingsList) {</span>
+<span class="nc" id="L468">            builtAddress = built.getName().replaceAll(&quot;\\s&quot;, &quot;&quot;).toUpperCase();</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">            for (i = 0; i &lt; strArrLRAW.size(); i++) {</span>
+<span class="nc" id="L470">                lineRAW = strArrLRAW.get(i).toUpperCase();</span>
+<span class="nc bnc" id="L471" title="All 2 branches missed.">                if(lineRAW.contains(builtAddress)){</span>
+<span class="nc" id="L472">                    foundE = true;</span>
+<span class="nc" id="L473">                    eIndexes[0] = i;</span>
+<span class="nc" id="L474">                    address = built.getName();</span>
+<span class="nc" id="L475">                    rBuilding = built;</span>
+<span class="nc" id="L476">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L479" title="All 2 branches missed.">            if(!foundE) {</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">                for (i = 0; i &lt; strArrLRAW.size(); i++) {</span>
+<span class="nc" id="L481">                    StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</span>
+<span class="nc" id="L482">                    charArrayAttempt = builtAddress.toCharArray();</span>
+<span class="nc" id="L483">                    foundInLine = 0;</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">                    for(char b : charArrayAttempt){</span>
+<span class="nc bnc" id="L485" title="All 2 branches missed.">                        if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</span>
+<span class="nc" id="L486">                            lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</span>
+<span class="nc" id="L487">                            foundInLine++;</span>
+<span class="nc" id="L488">                            stringBuilderRAW.delete(0,lastFound);</span>
+                        }
+                    }
+<span class="nc" id="L491">                    percentFound = ((double)foundInLine /(charArrayAttempt.length)) * 100;</span>
+<span class="nc bnc" id="L492" title="All 2 branches missed.">                    if(percentFound &gt; 90){</span>
+<span class="nc" id="L493">                        foundE = true;</span>
+<span class="nc" id="L494">                        eIndexes[0] = i;</span>
+<span class="nc" id="L495">                        address = built.getName();</span>
+<span class="nc" id="L496">                        rBuilding = built;</span>
+<span class="nc" id="L497">                        break;</span>
+                    }
+                }
+            }
+<span class="nc bnc" id="L501" title="All 2 branches missed.">            if(foundE){</span>
+<span class="nc" id="L502">                break;</span>
+            }
+<span class="nc" id="L504">        }</span>
+        //finished searching for address. will fail if no address found.
+<span class="nc bnc" id="L506" title="All 2 branches missed.">        if(rBuilding.equals(new Buildings())){</span>
+<span class="nc" id="L507">            return failure;</span>
+        }
+
+<span class="nc bnc" id="L510" title="All 2 branches missed.">        for(i = 0; i &lt;= 3; i++){</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">            if(eIndexes[0] - i == 0){</span>
+<span class="nc" id="L512">                searchMin = i;</span>
+<span class="nc bnc" id="L513" title="All 4 branches missed.">            } else if ((eIndexes[0] - i &gt;= 0) &amp;&amp; (i == 3)) {</span>
+<span class="nc" id="L514">                searchMin = 3;</span>
+            }
+<span class="nc bnc" id="L516" title="All 2 branches missed.">            if(eIndexes[0] + i == strArrLRAW.size()-1){</span>
+<span class="nc" id="L517">                searchMax = i;</span>
+<span class="nc bnc" id="L518" title="All 4 branches missed.">            } else if ((eIndexes[0] + i &lt;= strArrLRAW.size()-1) &amp;&amp; (i == 3)) {</span>
+<span class="nc" id="L519">                searchMax = 3;</span>
+            }
+        }
+
+
+        //if it succeeds then it will go onto make search for a room number.
+<span class="nc" id="L525">        List&lt;Room&gt; roomsList = roomRepository.findAllByBuildingId(rBuilding.getId());</span>
+<span class="nc" id="L526">        foundE = false;</span>
+
+<span class="nc bnc" id="L528" title="All 2 branches missed.">        for(Room room : roomsList) {</span>
+<span class="nc" id="L529">            attemptAptNum = room.getAptNum().replaceAll(&quot;\\s&quot;, &quot;&quot;).toUpperCase();</span>
+<span class="nc bnc" id="L530" title="All 2 branches missed.">            for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</span>
+<span class="nc" id="L531">                lineRAW = strArrLRAW.get(i).toUpperCase();</span>
+<span class="nc bnc" id="L532" title="All 2 branches missed.">                if(lineRAW.contains(attemptAptNum)){</span>
+<span class="nc" id="L533">                    foundE = true;</span>
+<span class="nc" id="L534">                    eIndexes[1] = i;</span>
+<span class="nc" id="L535">                    aptNum = room.getAptNum();</span>
+<span class="nc" id="L536">                    rRoom = room;</span>
+<span class="nc" id="L537">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L540" title="All 2 branches missed.">            if(!foundE) {</span>
+<span class="nc bnc" id="L541" title="All 2 branches missed.">                for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</span>
+<span class="nc" id="L542">                    StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</span>
+<span class="nc" id="L543">                    charArrayAttempt = attemptAptNum.toCharArray();</span>
+<span class="nc" id="L544">                    foundInLine = 0;</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">                    for(char b : charArrayAttempt){</span>
+<span class="nc bnc" id="L546" title="All 2 branches missed.">                        if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</span>
+<span class="nc" id="L547">                            lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</span>
+<span class="nc" id="L548">                            foundInLine++;</span>
+<span class="nc bnc" id="L549" title="All 2 branches missed.">                            if(lastFound == 0){</span>
+<span class="nc" id="L550">                                stringBuilderRAW.deleteCharAt(0);</span>
+                            }else{
+<span class="nc" id="L552">                                stringBuilderRAW.delete(0,lastFound);</span>
+                            }
+                        }
+                    }
+<span class="nc" id="L556">                    percentFound = ((double)foundInLine/(charArrayAttempt.length)) * 100;</span>
+<span class="nc bnc" id="L557" title="All 2 branches missed.">                    if(percentFound &gt; 90){</span>
+<span class="nc" id="L558">                        foundE = true;</span>
+<span class="nc" id="L559">                        eIndexes[1] = i;</span>
+<span class="nc" id="L560">                        aptNum = room.getAptNum();</span>
+<span class="nc" id="L561">                        rRoom = room;</span>
+<span class="nc" id="L562">                        break;</span>
+                    }
+                }
+            }
+<span class="nc bnc" id="L566" title="All 2 branches missed.">            if(foundE){</span>
+<span class="nc" id="L567">                break;</span>
+            }
+<span class="nc" id="L569">        }</span>
+        //finished searching for apartment number. will fail if no matching apartment number found.
+<span class="nc bnc" id="L571" title="All 2 branches missed.">        if(rRoom.equals(new Room())){</span>
+<span class="nc" id="L572">            return address + &quot;|&quot; + failure;</span>
+        }
+
+<span class="nc" id="L575">        List&lt;User&gt; userList = userRepository.findAllByRoomId(rRoom.getId());</span>
+<span class="nc" id="L576">        foundE = false;</span>
+
+<span class="nc bnc" id="L578" title="All 2 branches missed.">        for(User user : userList) {</span>
+<span class="nc" id="L579">            attemptUserName = user.getName().replaceAll(&quot;\\s&quot;, &quot;&quot;).toUpperCase();</span>
+<span class="nc bnc" id="L580" title="All 2 branches missed.">            for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</span>
+<span class="nc" id="L581">                lineRAW = strArrLRAW.get(i).toUpperCase();</span>
+<span class="nc bnc" id="L582" title="All 2 branches missed.">                if(lineRAW.contains(attemptUserName)){</span>
+<span class="nc" id="L583">                    foundE = true;</span>
+<span class="nc" id="L584">                    eIndexes[2] = i;</span>
+<span class="nc" id="L585">                    name = user.getName();</span>
+<span class="nc" id="L586">                    rUser = user;</span>
+<span class="nc" id="L587">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L590" title="All 2 branches missed.">            if(!foundE) {</span>
+<span class="nc bnc" id="L591" title="All 2 branches missed.">                for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</span>
+<span class="nc" id="L592">                    StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</span>
+<span class="nc" id="L593">                    charArrayAttempt = attemptUserName.toCharArray();</span>
+<span class="nc" id="L594">                    foundInLine = 0;</span>
+<span class="nc bnc" id="L595" title="All 2 branches missed.">                    for(char b : charArrayAttempt){</span>
+<span class="nc bnc" id="L596" title="All 2 branches missed.">                        if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</span>
+<span class="nc" id="L597">                            lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</span>
+<span class="nc" id="L598">                            foundInLine++;</span>
+<span class="nc bnc" id="L599" title="All 2 branches missed.">                            if(lastFound == 0){</span>
+<span class="nc" id="L600">                                stringBuilderRAW.deleteCharAt(0);</span>
+                            }else{
+<span class="nc" id="L602">                                stringBuilderRAW.delete(0,lastFound);</span>
+                            }
+                        }
+                    }
+<span class="nc" id="L606">                    percentFound = ((double)foundInLine/(charArrayAttempt.length)) * 100;</span>
+<span class="nc bnc" id="L607" title="All 2 branches missed.">                    if(percentFound &gt; 90){</span>
+<span class="nc" id="L608">                        foundE = true;</span>
+<span class="nc" id="L609">                        eIndexes[2] = i;</span>
+<span class="nc" id="L610">                        name = user.getName();</span>
+<span class="nc" id="L611">                        rUser = user;</span>
+<span class="nc" id="L612">                        break;</span>
+                    }
+                }
+            }
+<span class="nc bnc" id="L616" title="All 2 branches missed.">            if(foundE){</span>
+<span class="nc" id="L617">                break;</span>
+            }
+<span class="nc" id="L619">        }</span>
+
+<span class="nc bnc" id="L621" title="All 2 branches missed.">        if(rUser.equals(new User())){</span>
+<span class="nc" id="L622">            return address + &quot;|&quot; + aptNum + &quot;|&quot; + failure;</span>
+        }
+
+
+<span class="nc" id="L626">        foundE = false;</span>
+
+        //search for a string to see if its a USPS package or not
+<span class="nc bnc" id="L629" title="All 2 branches missed.">        for (i = 0; i &lt; strArrLRAW.size(); i++) {</span>
+<span class="nc" id="L630">            StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</span>
+<span class="nc" id="L631">            charArrayAttempt = &quot;USPSTRACKING#&quot;.toCharArray();</span>
+<span class="nc" id="L632">            foundInLine = 0;</span>
+<span class="nc bnc" id="L633" title="All 2 branches missed.">            for(char b : charArrayAttempt){</span>
+<span class="nc bnc" id="L634" title="All 2 branches missed.">                if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</span>
+<span class="nc" id="L635">                    lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</span>
+<span class="nc" id="L636">                    foundInLine++;</span>
+<span class="nc" id="L637">                    stringBuilderRAW.delete(0,lastFound);</span>
+                }
+            }
+<span class="nc" id="L640">            percentFound = ((double)foundInLine /(charArrayAttempt.length)) * 100;</span>
+<span class="nc bnc" id="L641" title="All 2 branches missed.">            if(percentFound &gt; 90){</span>
+<span class="nc" id="L642">                foundE = true;</span>
+<span class="nc" id="L643">                eIndexes[3] = i;</span>
+<span class="nc" id="L644">                break;</span>
+            }
+        }
+
+<span class="nc bnc" id="L648" title="All 2 branches missed.">        if(foundE){</span>
+<span class="nc" id="L649">            foundE = false;</span>
+<span class="nc bnc" id="L650" title="All 2 branches missed.">            for (i = eIndexes[3]-1; i &lt; strArrLRAW.size(); i++) {</span>
+<span class="nc" id="L651">                StringBuilder trackSB = new StringBuilder();</span>
+<span class="nc" id="L652">                StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</span>
+<span class="nc" id="L653">                charArrayAttempt = stringBuilderRAW.toString().toCharArray();</span>
+<span class="nc" id="L654">                foundInLine = 0;</span>
+<span class="nc bnc" id="L655" title="All 2 branches missed.">                if(stringBuilderRAW.indexOf(&quot;9&quot;) &gt; -1){</span>
+<span class="nc bnc" id="L656" title="All 2 branches missed.">                    for(char c : charArrayAttempt){</span>
+<span class="nc bnc" id="L657" title="All 4 branches missed.">                        if((Character.isDigit(c)) &amp;&amp; (foundInLine == 0)) {</span>
+<span class="nc bnc" id="L658" title="All 2 branches missed.">                            if(c == '9'){</span>
+<span class="nc" id="L659">                                break;</span>
+                            }
+<span class="nc" id="L661">                            lastFound = stringBuilderRAW.indexOf(String.valueOf(c));</span>
+<span class="nc" id="L662">                            foundInLine++;</span>
+<span class="nc" id="L663">                            trackSB.append(c);</span>
+<span class="nc" id="L664">                            stringBuilderRAW.delete(0,lastFound);</span>
+                        }
+<span class="nc bnc" id="L666" title="All 2 branches missed.">                        else if(Character.isDigit(c)){</span>
+<span class="nc" id="L667">                            lastFound = stringBuilderRAW.indexOf(String.valueOf(c));</span>
+<span class="nc" id="L668">                            foundInLine++;</span>
+<span class="nc" id="L669">                            trackSB.append(c);</span>
+<span class="nc" id="L670">                            stringBuilderRAW.delete(0,lastFound);</span>
+                        }
+                    }
+                }
+<span class="nc bnc" id="L674" title="All 4 branches missed.">                if((foundInLine == 22) &amp;&amp; (trackSB.indexOf(&quot;9&quot;) &lt; 1)){</span>
+<span class="nc" id="L675">                    trackingNum = trackSB.toString();</span>
+<span class="nc" id="L676">                    foundE = true;</span>
+<span class="nc" id="L677">                    eIndexes[3] = i;</span>
+<span class="nc" id="L678">                    break;</span>
+                }
+            }
+        }
+        else{
+<span class="nc bnc" id="L683" title="All 2 branches missed.">            for (i = 0; i &lt; strArrLRAW.size(); i++) {</span>
+<span class="nc" id="L684">                StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</span>
+<span class="nc" id="L685">                charArrayAttempt = &quot;UPS&quot;.toCharArray();</span>
+<span class="nc" id="L686">                foundInLine = 0;</span>
+<span class="nc bnc" id="L687" title="All 2 branches missed.">                for(char b : charArrayAttempt){</span>
+<span class="nc bnc" id="L688" title="All 2 branches missed.">                    if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</span>
+<span class="nc" id="L689">                        lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</span>
+<span class="nc" id="L690">                        foundInLine++;</span>
+<span class="nc" id="L691">                        stringBuilderRAW.delete(0,lastFound);</span>
+                    }
+                }
+<span class="nc" id="L694">                percentFound = ((double)foundInLine /(charArrayAttempt.length)) * 100;</span>
+<span class="nc bnc" id="L695" title="All 2 branches missed.">                if(percentFound &gt; 90){</span>
+<span class="nc" id="L696">                    trackingNum = &quot;UPS&quot;;</span>
+<span class="nc" id="L697">                    foundE = true;</span>
+<span class="nc" id="L698">                    eIndexes[3] = i;</span>
+<span class="nc" id="L699">                    break;</span>
+                }
+            }
+        }
+
+<span class="nc" id="L704">        filtered = address + &quot;|&quot; + aptNum + &quot;|&quot; + name + &quot;|&quot; + trackingNum + &quot;|&quot;;</span>
+<span class="nc" id="L705">        return filtered;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

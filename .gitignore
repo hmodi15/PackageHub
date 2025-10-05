@@ -1,0 +1,56 @@
+# Build artifacts
+target/
+build/
+*.jar
+*.war
+*.ear
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Android build files
+.gradle/
+local.properties
+*.apk
+*.aab
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Node modules (if any)
+node_modules/
+
+# Coverage reports
+htmlReport/
+jacoco.exec
+site/
+
+# Test reports
+surefire-reports/
+test-results/
+
+# Generated sources
+generated-sources/
+generated-test-sources/

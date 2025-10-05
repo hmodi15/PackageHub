@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Package.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Packages</a> &gt; <span class="el_source">Package.java</span></div><h1>Package.java</h1><pre class="source lang-java linenums">package onetomany.Packages;
+
+import jakarta.persistence.*;
+
+import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Random;
+
+
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import onetomany.Users.UserRepository;
+import onetomany.Users.User;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.sql.rowset.serial.SerialBlob;
+
+/**
+ * @author Benjamin Bartels
+ */
+@Entity
+public class Package {
+
+    /*
+     * The annotation @ID marks the field below as the primary key for the table created by springboot
+     * The @GeneratedValue generates a value if not already present, The strategy in this case is to start from 1 and increment for each table
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    /**
+     * The recipient's name.
+     */
+    private String name;
+
+    /**
+     * the apartment number the package is going to
+     */
+    private String apt_num;
+
+    /**
+     * the apartment address that the package is going to
+     */
+    private String address;
+
+    /**
+     * the year the package was scanned.
+     */
+    private int scan_Year;
+
+    /**
+     * the month the package was scanned.
+     */
+    private int scan_Month;
+
+    /**
+     * the day of the month the package was scanned.
+     */
+    private int scan_Date;
+
+    /**
+     * the time the package was scanned expressed using a 24-hour clock.
+     */
+    private String scan_Time;
+
+    /**
+     * the date the package was scanned expressed MM/DD/YYYY.
+     */
+    private String scan_Date_Str;
+
+    /**
+     * The status of the package: 1 = picked up, 0 = waiting to be picked up.
+     */
+    private boolean pickedUp;
+
+    /**
+     * The randomly generated pickup code for the package.
+     */
+    private String pickUpCode;
+
+    /**
+     * The tracking number of the package.
+     */
+    private String trackingNumber;
+
+    private String ocr_feedback;
+
+    private SerialBlob label_img;
+
+    /*
+     * @ManyToOne tells springboot that multiple instances of Package can map to one instance of OR multiple rows of the package table can map to one user row
+     * @JoinColumn specifies the ownership of the key i.e. The Package table will contain a foreign key from the User table and the column name will be user_id
+     * @JsonIgnore is to assure that there is no infinite loop while returning either user/package objects (package-&gt;user-&gt;[packages]-&gt;...)
+     */
+    /**
+     * the user class object ties the specific instance of the package class to its recipient
+     */
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = &quot;user_id&quot;, updatable = true)
+    @JsonIgnore
+    private User user;
+
+    // =============================== Constructors ================================== //
+
+    /**
+     * The empty constructor for the package class
+     */
+<span class="nc" id="L111">    public Package() {</span>
+<span class="nc" id="L112">        Date date = new Date();</span>
+<span class="nc" id="L113">        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();</span>
+<span class="nc" id="L114">        name = &quot;johnny&quot;;</span>
+<span class="nc" id="L115">        apt_num = &quot;42&quot;;</span>
+<span class="nc" id="L116">        this.pickedUp = false;</span>
+<span class="nc" id="L117">        this.user = null;</span>
+<span class="nc" id="L118">        this.pickUpCode = securityCodeGen();</span>
+<span class="nc" id="L119">    }</span>
+
+    /**
+     * The constructor for the package class that takes in the users name
+     */
+<span class="nc" id="L124">    public Package(String name) {</span>
+<span class="nc" id="L125">        this.name = name;</span>
+<span class="nc" id="L126">        Date date = new Date();</span>
+<span class="nc" id="L127">        this.pickedUp = false;</span>
+<span class="nc" id="L128">        this.pickUpCode = securityCodeGen();</span>
+<span class="nc" id="L129">    }</span>
+
+    /**
+     * The constructor for the package class that takes in the user's name
+     * and the predetermined package pick-up code
+     */
+<span class="nc" id="L135">    public Package(String name, String pickUpCode, String address){</span>
+<span class="nc" id="L136">        Date date = new Date();</span>
+<span class="nc" id="L137">        this.name = name;</span>
+<span class="nc" id="L138">        this.pickedUp = false;</span>
+<span class="nc" id="L139">        this.pickUpCode = pickUpCode;</span>
+<span class="nc" id="L140">        setAddress(address);</span>
+<span class="nc" id="L141">    }</span>
+
+    /**
+     * The constructor for the package class that takes in the user's name,
+     * Blob for the label image, feed back from the OCR and the
+     * predetermined package pick-up code
+     */
+<span class="nc" id="L148">    public Package(String name, String pickUpCode, SerialBlob label_img, String ocr_feedback){</span>
+<span class="nc" id="L149">        Date date = new Date();</span>
+<span class="nc" id="L150">        this.name = name;</span>
+<span class="nc" id="L151">        this.pickedUp = false;</span>
+<span class="nc" id="L152">        this.pickUpCode = pickUpCode;</span>
+<span class="nc" id="L153">        this.label_img = label_img;</span>
+<span class="nc" id="L154">        this.ocr_feedback = ocr_feedback;</span>
+<span class="nc" id="L155">        this.trackingNumber = &quot;not found&quot;;</span>
+<span class="nc" id="L156">    }</span>
+
+
+<span class="nc" id="L159">    public Package(User user, String address, String apt_num, String trackingNumber, SerialBlob label_img, String ocr_feedback){</span>
+<span class="nc" id="L160">        Date date = new Date();</span>
+<span class="nc" id="L161">        this.user = user;</span>
+<span class="nc" id="L162">        this.name = user.getName();</span>
+<span class="nc" id="L163">        this.apt_num = apt_num;</span>
+<span class="nc" id="L164">        this.address = address;</span>
+<span class="nc" id="L165">        this.pickedUp = false;</span>
+<span class="nc" id="L166">        this.label_img = label_img;</span>
+<span class="nc" id="L167">        this.ocr_feedback = ocr_feedback;</span>
+<span class="nc" id="L168">        this.trackingNumber = trackingNumber;</span>
+<span class="nc" id="L169">        this.pickUpCode = securityCodeGen();</span>
+<span class="nc" id="L170">    }</span>
+
+
+    // =============================== Getters and Setters for each field ================================== //
+
+
+    public int getid() {
+<span class="nc" id="L177">        return id;</span>
+    }
+
+    public void setid(Integer id) {
+<span class="nc" id="L181">        this.id = id;</span>
+<span class="nc" id="L182">    }</span>
+
+    public String getName() {
+<span class="nc" id="L185">        return name;</span>
+    }
+
+    public void setName(String name) {
+<span class="nc" id="L189">        this.name = name;</span>
+<span class="nc" id="L190">    }</span>
+
+    public void setAptNum(String apt_num) {
+<span class="nc" id="L193">        this.apt_num = apt_num;</span>
+<span class="nc" id="L194">    }</span>
+
+    public String getAptNum() {
+<span class="nc" id="L197">        return apt_num;</span>
+    }
+
+    public User getUser() {
+<span class="nc" id="L201">        return user;</span>
+    }
+
+    public void setUser(User user) {
+<span class="nc" id="L205">        this.user = user;</span>
+<span class="nc" id="L206">    }</span>
+
+    public boolean getPickUpStatus() {
+<span class="nc" id="L209">        return pickedUp;</span>
+    }
+
+    public void changePickUpStatus() {
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        pickedUp = !pickedUp;</span>
+<span class="nc" id="L214">    }</span>
+
+    public void setPickUpCode(String pickUpCode) {
+<span class="nc" id="L217">        this.pickUpCode = pickUpCode;</span>
+<span class="nc" id="L218">    }</span>
+
+    public String getPickUpCode() {
+<span class="nc" id="L221">        return pickUpCode;</span>
+    }
+
+    public String getAddress() {
+<span class="nc" id="L225">        return address;</span>
+    }
+
+    public void setAddress(String address) {
+<span class="nc" id="L229">        this.address = address;</span>
+<span class="nc" id="L230">    }</span>
+
+
+// =============================== Scan Time functions ================================== //
+
+    public void setScan_Date_Str(Date scanDate){
+<span class="nc" id="L236">        this.scan_Date_Str = scanDate.toString();</span>
+<span class="nc" id="L237">        StringBuilder dateSB = new StringBuilder(scan_Date_Str);</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        if(dateSB.indexOf(&quot;/&quot;) &gt;0) {</span>
+<span class="nc" id="L239">            this.scan_Year = Integer.parseInt(dateSB.substring(0, (dateSB.indexOf(&quot;-&quot;))));</span>
+<span class="nc" id="L240">            dateSB = dateSB.delete(0, dateSB.indexOf(&quot;-&quot;));</span>
+<span class="nc" id="L241">            dateSB.deleteCharAt(0);</span>
+<span class="nc" id="L242">            this.scan_Month = Integer.parseInt(dateSB.substring(0, (dateSB.indexOf(&quot;-&quot;))));</span>
+<span class="nc" id="L243">            dateSB = dateSB.delete(0, dateSB.indexOf(&quot;-&quot;));</span>
+<span class="nc" id="L244">            dateSB.deleteCharAt(0);</span>
+<span class="nc" id="L245">            this.scan_Date = Integer.parseInt(dateSB.substring(0, (dateSB.indexOf(&quot; &quot;))));</span>
+<span class="nc" id="L246">            dateSB = dateSB.delete(0, dateSB.indexOf(&quot; &quot;));</span>
+<span class="nc" id="L247">            dateSB.deleteCharAt(0);</span>
+<span class="nc" id="L248">            this.scan_Time = dateSB.toString();</span>
+        }
+<span class="nc" id="L250">    }</span>
+
+    public String getScan_Date_Str(){
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if(scan_Date_Str == null){</span>
+<span class="nc" id="L254">            return scan_Month + &quot;/&quot; + scan_Date + &quot;/&quot; + scan_Year;</span>
+        }
+<span class="nc" id="L256">        return scan_Date_Str;</span>
+    }
+
+    public int getScanYear() {
+<span class="nc" id="L260">        return scan_Year;</span>
+    }
+
+    public void setScanYear(Integer scanYear) {
+<span class="nc" id="L264">        this.scan_Year = scanYear;</span>
+<span class="nc" id="L265">    }</span>
+
+    public int getScanMonth() {
+<span class="nc" id="L268">        return scan_Month;</span>
+    }
+
+    public void setScanMonth(Integer scanMonth) {
+<span class="nc" id="L272">        this.scan_Month = scanMonth;</span>
+<span class="nc" id="L273">    }</span>
+
+    public int getScanDate() {
+<span class="nc" id="L276">        return scan_Date;</span>
+    }
+
+    public void setScanDate(Integer scanDate) {
+<span class="nc" id="L280">        this.scan_Date = scanDate;</span>
+<span class="nc" id="L281">    }</span>
+
+    public String getScanTime() {
+<span class="nc" id="L284">        return scan_Time;</span>
+    }
+
+    public void setScanTime(String scanTime) {
+<span class="nc" id="L288">        this.scan_Time = scanTime;</span>
+<span class="nc" id="L289">    }</span>
+
+
+    // =============================== Special functions ================================== //
+
+
+    public String securityCodeGen(){
+<span class="nc" id="L296">        Random random = new Random();</span>
+
+        // Generate first 2 random digits
+<span class="nc" id="L299">        StringBuilder codeBuilder = new StringBuilder();</span>
+<span class="nc" id="L300">        codeBuilder.append(random.nextInt(10)); // First digit</span>
+<span class="nc" id="L301">        codeBuilder.append(random.nextInt(10)); // Second digit</span>
+
+        // Generate 2 random capitalized letters
+<span class="nc bnc" id="L304" title="All 2 branches missed.">        for (int i = 0; i &lt; 2; i++) {</span>
+<span class="nc" id="L305">            char randomChar = (char) ('A' + random.nextInt(26));</span>
+<span class="nc" id="L306">            codeBuilder.append(randomChar);</span>
+        }
+
+        // Generate last random digit
+<span class="nc" id="L310">        codeBuilder.append(random.nextInt(10));</span>
+
+<span class="nc" id="L312">        return codeBuilder.toString();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,225 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > Credentials</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">onetomany.Credentials</a>
+</div>
+
+<h1>Coverage Summary for Class: Credentials (onetomany.Credentials)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Credentials</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64%
+  </span>
+  <span class="absValue">
+    (16/25)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Credentials$HibernateInstantiator$RHfF3xHg</td>
+  </tr>
+  <tr>
+    <td class="name">Credentials$HibernateProxy$lA1BHxAT</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64%
+  </span>
+  <span class="absValue">
+    (16/25)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package onetomany.Credentials;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonIgnore;
+&nbsp;import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+&nbsp;import jakarta.persistence.*;
+&nbsp;import onetomany.Users.User;
+&nbsp;import onetomany.Users.UserRepository;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.web.bind.annotation.RequestBody;
+&nbsp;
+&nbsp;import java.security.MessageDigest;
+&nbsp;import java.security.NoSuchAlgorithmException;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@Entity
+&nbsp;public class Credentials {
+&nbsp;    @Id
+&nbsp;    private String emailId;
+&nbsp;
+&nbsp;    private String passwordId;
+&nbsp;
+&nbsp;    @OneToOne(cascade = CascadeType.ALL)
+&nbsp;    @JoinColumn(name = &quot;user_id&quot;, updatable = true)
+&nbsp;    @JsonIgnore
+&nbsp;    private User user;
+&nbsp;
+&nbsp;
+&nbsp;    // =============================== Constructors ================================== //
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;    public Credentials(String emailId, String passwordID) {</b>
+<b class="fc">&nbsp;        this.setEmailId(emailId);</b>
+<b class="fc">&nbsp;        this.setPasswordId(passwordID);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Credentials() {</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // =============================== Getters and Setters for each field ================================== //
+&nbsp;
+&nbsp;
+&nbsp;    public String getEmailId(){
+<b class="fc">&nbsp;        return emailId;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEmailId(String emailId){
+<b class="fc">&nbsp;        this.emailId = emailId;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getName() {
+<b class="nc">&nbsp;        if (user != null &amp;&amp; user.getName() != null) {</b>
+<b class="nc">&nbsp;            return user.getName();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return &quot;&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getPasswordId(){
+<b class="fc">&nbsp;        return passwordId;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPasswordId(String passwordId){
+<b class="fc">&nbsp;        this.passwordId = passwordId;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCredentialsEmail(String email) {
+<b class="nc">&nbsp;        user.setEmailId(email);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCredentialsPassword(String password) {
+<b class="nc">&nbsp;        user.setPasswordId(password);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public User getUser() {
+<b class="nc">&nbsp;        return user;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setUser(User user) {
+<b class="nc">&nbsp;        this.user = user;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // =============================== Special Functions ================================== //
+&nbsp;
+&nbsp;    /**
+&nbsp;     * SHA-256 Encryption code to encrypt passwords for security reasons
+&nbsp;     * @param password
+&nbsp;     * @return hexString
+&nbsp;     */
+&nbsp;    public static String hashPassword(String password) {
+&nbsp;        try {
+<b class="fc">&nbsp;            MessageDigest digest = MessageDigest.getInstance(&quot;SHA-256&quot;);</b>
+<b class="fc">&nbsp;            byte[] encodedHash = digest.digest(password.getBytes());</b>
+&nbsp;
+<b class="fc">&nbsp;            StringBuilder hexString = new StringBuilder();</b>
+<b class="fc">&nbsp;            for (byte b : encodedHash) {</b>
+<b class="fc">&nbsp;                String hex = Integer.toHexString(0xff &amp; b);</b>
+<b class="fc">&nbsp;                if (hex.length() == 1) hexString.append(&#39;0&#39;);</b>
+<b class="fc">&nbsp;                hexString.append(hex);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return hexString.toString();</b>
+<b class="nc">&nbsp;        } catch (NoSuchAlgorithmException e) {</b>
+<b class="nc">&nbsp;            return null; // Handle error appropriately</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-22 10:53</div>
+</div>
+</body>
+</html>

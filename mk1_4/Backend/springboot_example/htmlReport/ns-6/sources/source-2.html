@@ -1,0 +1,533 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > PackageController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">onetomany.Packages</a>
+</div>
+
+<h1>Coverage Summary for Class: PackageController (onetomany.Packages)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PackageController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/241)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package onetomany.Packages;
+&nbsp;
+&nbsp;import java.awt.image.BufferedImage;
+&nbsp;import java.io.ByteArrayInputStream;
+&nbsp;import java.io.File;
+&nbsp;import java.io.IOException;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;
+&nbsp;import net.sourceforge.tess4j.Tesseract;
+&nbsp;import net.sourceforge.tess4j.TesseractException;
+&nbsp;import onetomany.Buildings.BuildingRepository;
+&nbsp;import onetomany.Buildings.Buildings;
+&nbsp;import onetomany.Labels.LabelRepository;
+&nbsp;import onetomany.Users.UserRepository;
+&nbsp;import onetomany.Labels.Label_Image;
+&nbsp;import onetomany.Rooms.Room;
+&nbsp;import onetomany.Rooms.RoomRepository;
+&nbsp;import org.apache.commons.io.FileUtils;
+&nbsp;import onetomany.Credentials.Credentials;
+&nbsp;import onetomany.Credentials.CredentialsRepository;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import onetomany.Users.*;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import javax.imageio.ImageIO;
+&nbsp;import javax.sql.rowset.serial.SerialBlob;
+&nbsp;
+&nbsp;
+&nbsp;@RestController
+<b class="nc">&nbsp;public class PackageController {</b>
+&nbsp;
+<b class="nc">&nbsp;    private static String directory = &quot;../../../../../../../home/benjbart/imgfolder&quot;;//&quot;src/main/resources/imgfolder&quot;;//&quot;\\src\\main\\resources\\imgfolder&quot;;</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    BuildingRepository buildingRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    RoomRepository roomRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    LabelRepository labelRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    UserRepository userRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    PackageRepository packageRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    CredentialsRepository credentialsRepository;
+&nbsp;
+<b class="nc">&nbsp;    private String success = &quot;{\&quot;message\&quot;:\&quot;success\&quot;}&quot;;</b>
+<b class="nc">&nbsp;    private String failure = &quot;{\&quot;message\&quot;:\&quot;failure\&quot;}&quot;;</b>
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get a list of all the packages&quot;)
+&nbsp;    @GetMapping(path = &quot;/packages&quot;)
+&nbsp;    List&lt;Package&gt; getAllPackage(){
+<b class="nc">&nbsp;        return packageRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get a specific package via id&quot;)
+&nbsp;    @GetMapping(path = &quot;/packages/{id}&quot;)
+&nbsp;    Package getPackageById( @PathVariable int id){
+<b class="nc">&nbsp;        return packageRepository.findById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get a specific package via email&quot;)
+&nbsp;    @GetMapping(path = &quot;/users/packages/{email}&quot;)
+&nbsp;    List&lt;Package&gt; getPackageByEmail( @PathVariable String email){
+<b class="nc">&nbsp;        Credentials userCred = credentialsRepository.findByemailId(email);</b>
+<b class="nc">&nbsp;        User user = userRepository.findBycredentials(userCred);</b>
+<b class="nc">&nbsp;        return user.getPackages();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Create an empty package object&quot;)
+&nbsp;    @PostMapping(path = &quot;/packages&quot;)
+&nbsp;    String createPackage(){
+<b class="nc">&nbsp;        packageRepository.save(new Package());</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Changes the package pickup status&quot;)
+&nbsp;    @PutMapping(path = &quot;/packages/pickup/{id}&quot;)
+&nbsp;    String changePackagePickUpStatus(@PathVariable int id){
+<b class="nc">&nbsp;        Package pack = packageRepository.findById(id);</b>
+<b class="nc">&nbsp;        pack.changePickUpStatus();</b>
+<b class="nc">&nbsp;        packageRepository.save(pack);</b>
+<b class="nc">&nbsp;        return success + &quot;\nPickup status is now: &quot; + pack.getPickUpStatus();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Create an package object from parameters sent with the URL&quot;)
+&nbsp;    @PostMapping(path = &quot;/packages/create&quot;)
+&nbsp;    String createCustomPackage(@RequestParam String name, @RequestParam String pickUpCode){
+<b class="nc">&nbsp;        Package pack = new Package(name, pickUpCode);</b>
+<b class="nc">&nbsp;        packageRepository.save(pack);</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            User user = userRepository.findByname(name);</b>
+<b class="nc">&nbsp;            if (user.getName().equals(name)) {</b>
+<b class="nc">&nbsp;                user.addPackages(pack);</b>
+<b class="nc">&nbsp;                pack.setUser(user);</b>
+<b class="nc">&nbsp;                packageRepository.save(pack);</b>
+<b class="nc">&nbsp;                userRepository.save(user);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch(Exception e) {return failure;}</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Process the Id of a label&#39;s Blob&quot;)
+&nbsp;    @PostMapping(path = &quot;/packages/OCR/{id}&quot;)
+&nbsp;    String createCustomPackage(@PathVariable int id){
+<b class="nc">&nbsp;        Tesseract tesseract = new Tesseract();</b>
+<b class="nc">&nbsp;        tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</b>
+<b class="nc">&nbsp;        Label_Image labelImage = labelRepository.findById(id);</b>
+<b class="nc">&nbsp;        SerialBlob labelBlob = labelImage.getImageBlob();</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            BufferedImage img = ImageIO.read(new ByteArrayInputStream(labelBlob.getBytes(1,(int)labelBlob.length())));</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                String ocrResult = tesseract.doOCR(img);</b>
+<b class="nc">&nbsp;                StringBuilder filtered = new StringBuilder(filterOCRResult(ocrResult));</b>
+<b class="nc">&nbsp;                if(String.valueOf(filtered).contains(failure)){</b>
+<b class="nc">&nbsp;                    return failure;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                String rawFiltered = String.valueOf(filtered);</b>
+<b class="nc">&nbsp;                String address = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</b>
+<b class="nc">&nbsp;                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</b>
+<b class="nc">&nbsp;                filtered.deleteCharAt(0);</b>
+<b class="nc">&nbsp;                String aptNum = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</b>
+<b class="nc">&nbsp;                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</b>
+<b class="nc">&nbsp;                filtered.deleteCharAt(0);</b>
+<b class="nc">&nbsp;                String name = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</b>
+<b class="nc">&nbsp;                User user = userRepository.findByname(name);</b>
+<b class="nc">&nbsp;                Package pack = new Package(user, address, aptNum, labelBlob, rawFiltered);</b>
+<b class="nc">&nbsp;                packageRepository.save(pack);</b>
+&nbsp;                //Some things to sort out the specific text from the result
+<b class="nc">&nbsp;                return ocrResult + &quot;\n\nPackage_id:&quot; + pack.getid() + &quot;\n\n filtered OCR result:&quot; + rawFiltered;</b>
+<b class="nc">&nbsp;            } catch (TesseractException e) {</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            return &quot;Failed to upload file: &quot; + e.getMessage();</b>
+<b class="nc">&nbsp;        } catch (SQLException e) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Process the provided image with Tesseract and return the string from Tesseract&quot;)
+&nbsp;    @PostMapping(&quot;/packages/OCR&quot;)
+&nbsp;    public String processPackageLabelOCR(@RequestParam(&quot;image&quot;) MultipartFile imageFile)  {
+<b class="nc">&nbsp;        Tesseract tesseract = new Tesseract();</b>
+<b class="nc">&nbsp;        tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            File destinationFile = new File(directory + File.separator + imageFile.getOriginalFilename());</b>
+<b class="nc">&nbsp;            imageFile.transferTo(destinationFile);  // save file to disk</b>
+<b class="nc">&nbsp;            byte[] byteArray = FileUtils.readFileToByteArray(destinationFile);</b>
+<b class="nc">&nbsp;            Label_Image image = new Label_Image();</b>
+<b class="nc">&nbsp;            image.setFilePath(destinationFile.getAbsolutePath());</b>
+<b class="nc">&nbsp;            SerialBlob label_img = new SerialBlob(byteArray);</b>
+<b class="nc">&nbsp;            image.setImageBlob(label_img);</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                BufferedImage img = ImageIO.read(new ByteArrayInputStream(label_img.getBytes(1,(int)label_img.length())));</b>
+&nbsp;                //String ocrResult = tesseract.doOCR(destinationFile);
+<b class="nc">&nbsp;                String ocrResult = tesseract.doOCR(img);</b>
+<b class="nc">&nbsp;                StringBuilder filtered = new StringBuilder(filterOCRResult(ocrResult));</b>
+<b class="nc">&nbsp;                filtered = new StringBuilder(filtered + &quot;|&quot; + &quot;|&quot; + &quot;|&quot; + &quot;|&quot;);</b>
+<b class="nc">&nbsp;                if(String.valueOf(filtered).contains(failure)){</b>
+<b class="nc">&nbsp;                    return failure + &quot;failed to gather all needed information. NO Package will be made.\nInformation Gathered:\n&quot; + filtered;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                String rawFiltered = String.valueOf(filtered);</b>
+<b class="nc">&nbsp;                String address = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</b>
+<b class="nc">&nbsp;                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</b>
+<b class="nc">&nbsp;                filtered.deleteCharAt(0);</b>
+<b class="nc">&nbsp;                String aptNum = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</b>
+<b class="nc">&nbsp;                filtered = filtered.delete(0, filtered.indexOf(&quot;|&quot;));</b>
+<b class="nc">&nbsp;                filtered.deleteCharAt(0);</b>
+<b class="nc">&nbsp;                String name = filtered.substring(0, (filtered.indexOf(&quot;|&quot;)));</b>
+<b class="nc">&nbsp;                User user = userRepository.findByname(name);</b>
+<b class="nc">&nbsp;                Package pack = new Package(user, address, aptNum, label_img, rawFiltered);</b>
+<b class="nc">&nbsp;                packageRepository.save(pack);</b>
+&nbsp;                //Some things to sort out the specific text from the result
+<b class="nc">&nbsp;                System.out.println(ocrResult + &quot;\n\nPackage_id:&quot; + pack.getid() + &quot;\n\n filtered OCR result:&quot; + rawFiltered);</b>
+<b class="nc">&nbsp;                return ocrResult + &quot;\n\nPackage_id:&quot; + pack.getid() + &quot;\n\n filtered OCR result:&quot; + rawFiltered;</b>
+<b class="nc">&nbsp;            } catch (TesseractException e) {</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            return &quot;Failed to upload file: &quot; + e.getMessage();</b>
+<b class="nc">&nbsp;        } catch (SQLException e) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return failure;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;@Operation(summary = &quot;Update a specific package&#39;s details&quot;)    
+&nbsp;@PutMapping(&quot;/packages/{id}&quot;)
+&nbsp;    Package updatePackage(@PathVariable int id, @RequestBody Package request){
+<b class="nc">&nbsp;        Package pack = packageRepository.findById(id);</b>
+<b class="nc">&nbsp;        if(pack == null){ return null; }</b>
+<b class="nc">&nbsp;        packageRepository.save(request);</b>
+<b class="nc">&nbsp;        return packageRepository.findById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Delete a specific package&quot;)
+&nbsp;    @DeleteMapping(path = &quot;/packages/{id}&quot;)
+&nbsp;    public String deletePackage(@PathVariable int id){
+<b class="nc">&nbsp;        Package pkg = packageRepository.findById(id);</b>
+<b class="nc">&nbsp;        packageRepository.delete(pkg);</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Filter the result from Tesseract to get the Address, Apartment Number and Name of the recipient&quot;)
+&nbsp;    String filterOCRResult(String ocrRAWResult){
+&nbsp;        String filtered;
+<b class="nc">&nbsp;        String address = &quot;NOT FOUND&quot;;</b>
+&nbsp;        //String city = &quot;NOT FOUND&quot;;
+<b class="nc">&nbsp;        String aptNum = &quot;NOT FOUND&quot;;</b>
+<b class="nc">&nbsp;        String name = &quot;NOT FOUND&quot;;</b>
+<b class="nc">&nbsp;        String trackingNum = &quot;NOT FOUND&quot;;</b>
+&nbsp;        String lineRAW;
+&nbsp;        String builtAddress;
+&nbsp;        String attemptAptNum;
+&nbsp;        String attemptUserName;
+<b class="nc">&nbsp;        char[] charArrayRaw = ocrRAWResult.toCharArray();</b>
+&nbsp;        char[] charArrayAttempt;
+<b class="nc">&nbsp;        ArrayList&lt;String&gt; strArrLRAW = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        int[] eIndexes = new int[4];</b>
+<b class="nc">&nbsp;        boolean foundE = false;</b>
+<b class="nc">&nbsp;        int foundInLine = 0;</b>
+&nbsp;        int lastFound;
+<b class="nc">&nbsp;        int i = 0;</b>
+<b class="nc">&nbsp;        int attemptNum = 0;</b>
+<b class="nc">&nbsp;        int searchMax = 3;</b>
+<b class="nc">&nbsp;        int searchMin = 3;</b>
+<b class="nc">&nbsp;        double percentFound = 0;</b>
+<b class="nc">&nbsp;        StringBuilder temp = new StringBuilder();</b>
+<b class="nc">&nbsp;        Buildings rBuilding = new Buildings();</b>
+<b class="nc">&nbsp;        Room rRoom = new Room();</b>
+<b class="nc">&nbsp;        User rUser = new User();</b>
+<b class="nc">&nbsp;        for(i = 0; i &lt; charArrayRaw.length; i++){</b>
+<b class="nc">&nbsp;            if(charArrayRaw[i] == &#39;\n&#39;){</b>
+<b class="nc">&nbsp;                strArrLRAW.add(temp.toString());</b>
+<b class="nc">&nbsp;                temp = new StringBuilder();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            else if((charArrayRaw[i] != &#39; &#39;) &amp;&amp; (charArrayRaw[i] != &#39;\t&#39;)){</b>
+<b class="nc">&nbsp;                temp.append(charArrayRaw[i]);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        List&lt;Buildings&gt; buildingsList = buildingRepository.findAll();</b>
+&nbsp;        //search for address numbers, then check for first instance of the first character in the street name, if it
+&nbsp;        // can&#39;t be found check the second and so on, then check how well the street names match up.
+&nbsp;        // then check for apt numbers. in the vincinity of the address,
+&nbsp;
+<b class="nc">&nbsp;        for(Buildings built : buildingsList) {</b>
+<b class="nc">&nbsp;            builtAddress = built.getName().replaceAll(&quot;\\s&quot;, &quot;&quot;).toUpperCase();</b>
+<b class="nc">&nbsp;            for (i = 0; i &lt; strArrLRAW.size(); i++) {</b>
+<b class="nc">&nbsp;                lineRAW = strArrLRAW.get(i).toUpperCase();</b>
+<b class="nc">&nbsp;                if(lineRAW.contains(builtAddress)){</b>
+<b class="nc">&nbsp;                    foundE = true;</b>
+<b class="nc">&nbsp;                    eIndexes[0] = i;</b>
+<b class="nc">&nbsp;                    address = built.getName();</b>
+<b class="nc">&nbsp;                    rBuilding = built;</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(!foundE) {</b>
+<b class="nc">&nbsp;                for (i = 0; i &lt; strArrLRAW.size(); i++) {</b>
+<b class="nc">&nbsp;                    StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</b>
+<b class="nc">&nbsp;                    charArrayRaw = strArrLRAW.get(i).toUpperCase().toCharArray();</b>
+<b class="nc">&nbsp;                    charArrayAttempt = builtAddress.toCharArray();</b>
+<b class="nc">&nbsp;                    foundInLine = 0;</b>
+<b class="nc">&nbsp;                    for(char b : charArrayAttempt){</b>
+<b class="nc">&nbsp;                        if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</b>
+<b class="nc">&nbsp;                            lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</b>
+<b class="nc">&nbsp;                            foundInLine++;</b>
+<b class="nc">&nbsp;                            stringBuilderRAW.delete(0,lastFound);</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    percentFound = ((double)foundInLine /(charArrayAttempt.length)) * 100;</b>
+<b class="nc">&nbsp;                    if(percentFound &gt; 90){</b>
+<b class="nc">&nbsp;                        foundE = true;</b>
+<b class="nc">&nbsp;                        eIndexes[0] = i;</b>
+<b class="nc">&nbsp;                        address = built.getName();</b>
+<b class="nc">&nbsp;                        rBuilding = built;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(foundE){</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;        //finished searching for address. will fail if no address found.
+<b class="nc">&nbsp;        if(rBuilding.equals(new Buildings())){</b>
+<b class="nc">&nbsp;            return failure;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(i = 0; i &lt;= 3; i++){</b>
+<b class="nc">&nbsp;            if(eIndexes[0] - i == 0){</b>
+<b class="nc">&nbsp;                searchMin = i;</b>
+<b class="nc">&nbsp;            } else if ((eIndexes[0] - i &gt;= 0) &amp;&amp; (i == 3)) {</b>
+<b class="nc">&nbsp;                searchMin = 3;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(eIndexes[0] + i == strArrLRAW.size()-1){</b>
+<b class="nc">&nbsp;                searchMax = i;</b>
+<b class="nc">&nbsp;            } else if ((eIndexes[0] + i &lt;= strArrLRAW.size()-1) &amp;&amp; (i == 3)) {</b>
+<b class="nc">&nbsp;                searchMax = 3;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;
+&nbsp;        //if it succeeds then it will go onto make search for a room number.
+<b class="nc">&nbsp;        List&lt;Room&gt; roomsList = roomRepository.findAllByBuildingId(rBuilding.getId());</b>
+<b class="nc">&nbsp;        foundE = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Room room : roomsList) {</b>
+<b class="nc">&nbsp;            attemptAptNum = room.getAptNum().replaceAll(&quot;\\s&quot;, &quot;&quot;).toUpperCase();</b>
+<b class="nc">&nbsp;            for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</b>
+<b class="nc">&nbsp;                lineRAW = strArrLRAW.get(i).toUpperCase();</b>
+<b class="nc">&nbsp;                if(lineRAW.contains(attemptAptNum)){</b>
+<b class="nc">&nbsp;                    foundE = true;</b>
+<b class="nc">&nbsp;                    eIndexes[1] = i;</b>
+<b class="nc">&nbsp;                    aptNum = room.getAptNum();</b>
+<b class="nc">&nbsp;                    rRoom = room;</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(!foundE) {</b>
+<b class="nc">&nbsp;                for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</b>
+<b class="nc">&nbsp;                    StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</b>
+<b class="nc">&nbsp;                    charArrayRaw = strArrLRAW.get(i).toUpperCase().toCharArray();</b>
+<b class="nc">&nbsp;                    charArrayAttempt = attemptAptNum.toCharArray();</b>
+<b class="nc">&nbsp;                    foundInLine = 0;</b>
+<b class="nc">&nbsp;                    for(char b : charArrayAttempt){</b>
+<b class="nc">&nbsp;                        if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</b>
+<b class="nc">&nbsp;                            lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</b>
+<b class="nc">&nbsp;                            foundInLine++;</b>
+<b class="nc">&nbsp;                            if(lastFound == 0){</b>
+<b class="nc">&nbsp;                                stringBuilderRAW.deleteCharAt(0);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                stringBuilderRAW.delete(0,lastFound);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    percentFound = ((double)foundInLine/(charArrayAttempt.length)) * 100;</b>
+<b class="nc">&nbsp;                    if(percentFound &gt; 90){</b>
+<b class="nc">&nbsp;                        foundE = true;</b>
+<b class="nc">&nbsp;                        eIndexes[1] = i;</b>
+<b class="nc">&nbsp;                        aptNum = room.getAptNum();</b>
+<b class="nc">&nbsp;                        rRoom = room;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(foundE){</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;        //finished searching for apartment number. will fail if no matching apartment number found.
+<b class="nc">&nbsp;        if(rRoom.equals(new Room())){</b>
+<b class="nc">&nbsp;            return address + &quot;|&quot; + failure;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        List&lt;User&gt; userList = userRepository.findAllByRoomId(rRoom.getId());</b>
+<b class="nc">&nbsp;        foundE = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(User user : userList) {</b>
+<b class="nc">&nbsp;            attemptUserName = user.getName().replaceAll(&quot;\\s&quot;, &quot;&quot;).toUpperCase();</b>
+<b class="nc">&nbsp;            for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</b>
+<b class="nc">&nbsp;                lineRAW = strArrLRAW.get(i).toUpperCase();</b>
+<b class="nc">&nbsp;                if(lineRAW.contains(attemptUserName)){</b>
+<b class="nc">&nbsp;                    foundE = true;</b>
+<b class="nc">&nbsp;                    eIndexes[2] = i;</b>
+<b class="nc">&nbsp;                    name = user.getName();</b>
+<b class="nc">&nbsp;                    rUser = user;</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(!foundE) {</b>
+<b class="nc">&nbsp;                for (i = eIndexes[0]-searchMin; i &lt;= eIndexes[0]+searchMax; i++) {</b>
+<b class="nc">&nbsp;                    StringBuilder stringBuilderRAW = new StringBuilder(strArrLRAW.get(i).toUpperCase());</b>
+<b class="nc">&nbsp;                    charArrayRaw = strArrLRAW.get(i).toUpperCase().toCharArray();</b>
+<b class="nc">&nbsp;                    charArrayAttempt = attemptUserName.toCharArray();</b>
+<b class="nc">&nbsp;                    foundInLine = 0;</b>
+<b class="nc">&nbsp;                    for(char b : charArrayAttempt){</b>
+<b class="nc">&nbsp;                        if(stringBuilderRAW.indexOf(String.valueOf(b)) &gt; -1){</b>
+<b class="nc">&nbsp;                            lastFound = stringBuilderRAW.indexOf(String.valueOf(b));</b>
+<b class="nc">&nbsp;                            foundInLine++;</b>
+<b class="nc">&nbsp;                            if(lastFound == 0){</b>
+<b class="nc">&nbsp;                                stringBuilderRAW.deleteCharAt(0);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                stringBuilderRAW.delete(0,lastFound);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    percentFound = ((double)foundInLine/(charArrayAttempt.length)) * 100;</b>
+<b class="nc">&nbsp;                    if(percentFound &gt; 90){</b>
+<b class="nc">&nbsp;                        foundE = true;</b>
+<b class="nc">&nbsp;                        eIndexes[2] = i;</b>
+<b class="nc">&nbsp;                        name = user.getName();</b>
+<b class="nc">&nbsp;                        rUser = user;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(foundE){</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(rUser.equals(new User())){</b>
+<b class="nc">&nbsp;            return address + &quot;|&quot; + aptNum + &quot;|&quot; + failure;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        trackingNum = &quot;NOT LOOKING FOR RN&quot;;</b>
+<b class="nc">&nbsp;        filtered = address + &quot;|&quot; + aptNum + &quot;|&quot; + name + &quot;|&quot; + trackingNum;</b>
+<b class="nc">&nbsp;        return filtered;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-19 19:11</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Users</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package onetomany.Users;
+
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.NonUniqueResultException;
+import onetomany.Credentials.Credentials;
+import onetomany.Credentials.CredentialsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.transaction.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import onetomany.Rooms.Room;
+import onetomany.Rooms.RoomRepository;
+import onetomany.Packages.Package;
+import onetomany.Packages.PackageRepository;
+
+import static onetomany.Credentials.Credentials.hashPassword;
+
+
+/**
+ *
+ * @author Benjimin Bartels and Harsh Modi
+ *
+ */
+
+@RestController
+public class UserController {
+
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    RoomRepository roomRepository;
+    @Autowired
+    PackageRepository packageRepository;
+    @Autowired
+    CredentialsRepository credentialsRepository;
+
+<span class="nc" id="L41">    private String success = &quot;{\&quot;message\&quot;:\&quot;success\&quot;}&quot;;</span>
+<span class="nc" id="L42">    private String failure = &quot;{\&quot;message\&quot;:\&quot;failure\&quot;}&quot;;</span>
+    private static String chatUser;
+
+<span class="nc" id="L45">    public UserController(UserRepository userRepository, CredentialsRepository credentialsRepository) {</span>
+<span class="nc" id="L46">        this.userRepository = userRepository;</span>
+<span class="nc" id="L47">        this.credentialsRepository = credentialsRepository;</span>
+<span class="nc" id="L48">    }</span>
+
+
+    // =============================== Mappings ================================== //
+
+
+    @Operation(summary = &quot;Get a list of all the users&quot;)
+    @GetMapping(path = &quot;/users&quot;)
+    public List&lt;User&gt; getAllUsers(){
+<span class="nc" id="L57">        return userRepository.findAll();</span>
+    }
+    @Operation(summary = &quot;Get a specific user&quot;)
+    @GetMapping(path = &quot;/users/{id}&quot;)
+    public User getUserById( @PathVariable int id){
+<span class="nc" id="L62">        return userRepository.findById(id);</span>
+    }
+
+    @Operation(summary = &quot;Get a specific user's details given their email&quot;)
+    @GetMapping(path = &quot;/account/{email}&quot;)
+    public User getUserByEmail(@PathVariable String email) {
+<span class="nc" id="L68">        Credentials userCred = credentialsRepository.findByemailId(email);</span>
+<span class="nc" id="L69">        return userRepository.findBycredentials(userCred);</span>
+    }
+
+    @Operation(summary = &quot;Get the list of packages of a specific user&quot;)
+    @GetMapping(path = &quot;/users/{id}/packages&quot;)
+    public List&lt;Package&gt; getPackagesByUserId(@PathVariable int id, User user){
+<span class="nc" id="L75">        user = userRepository.findById(id);</span>
+<span class="nc" id="L76">        return user.getPackages();</span>
+    }
+
+    @Operation(summary = &quot;Get the list of packages that are awaiting pickup of a specific user&quot;)
+    @GetMapping(path = &quot;/users/{id}/packagestopickup&quot;)
+    List&lt;Package&gt; getAwaitingPackagesByUserId(@PathVariable int id){
+<span class="nc" id="L82">        User user = userRepository.findById(id);</span>
+<span class="nc" id="L83">        return user.getAwaitingPackages();</span>
+    }
+
+    @Operation(summary = &quot;Make a new user that isn't already in the database&quot;)
+    @PostMapping(path = &quot;/users&quot;)
+    public String createUser(@RequestBody User user){
+<span class="nc bnc" id="L89" title="All 6 branches missed.">        if(user == null || !user.getEmailId().contains(&quot;@&quot;) || !user.getEmailId().contains(&quot;.&quot;)) {</span>
+<span class="nc" id="L90">            return &quot;failure&quot;;</span>
+        }
+        try {
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            if(credentialsRepository.findByemailId(user.getEmailId()).getEmailId().equals(user.getEmailId())) {</span>
+<span class="nc" id="L94">                return &quot;failure&quot;;</span>
+            }
+<span class="nc" id="L96">            user.setPasswordId(hashPassword(user.getPasswordId()));</span>
+<span class="nc" id="L97">            Credentials userCred = new Credentials(user.getEmailId(), user.getPasswordId());</span>
+<span class="nc" id="L98">            user.setCredentials(userCred);</span>
+<span class="nc" id="L99">            userCred.setUser(user);</span>
+<span class="nc" id="L100">            credentialsRepository.save(userCred);</span>
+<span class="nc" id="L101">            userRepository.save(user);</span>
+<span class="nc" id="L102">            return success;</span>
+<span class="nc" id="L103">        } catch (NonUniqueResultException e) {</span>
+            // Handle non-unique result exception
+<span class="nc" id="L105">            return &quot;failure&quot;; // Return a specific message indicating a non-unique result</span>
+<span class="nc" id="L106">        } catch (Exception e) {</span>
+            // Log the exception or handle it appropriately
+<span class="nc" id="L108">            user.setPasswordId(hashPassword(user.getPasswordId()));</span>
+<span class="nc" id="L109">            Credentials userCred = new Credentials(user.getEmailId(), user.getPasswordId());</span>
+<span class="nc" id="L110">            user.setCredentials(userCred);</span>
+<span class="nc" id="L111">            userCred.setUser(user);</span>
+<span class="nc" id="L112">            userRepository.save(user);</span>
+<span class="nc" id="L113">            credentialsRepository.save(userCred);</span>
+<span class="nc" id="L114">            return success;</span>
+        }
+    }
+
+
+    @Operation(summary = &quot;Edit a specific user's details given their id&quot;)
+    @PutMapping(&quot;/users/{id}&quot;)
+    User updateUserViaId(@PathVariable int id, @RequestBody User request) throws ExecutionException, InterruptedException {
+
+<span class="nc" id="L123">        User user = userRepository.findById(id);</span>
+        Credentials userCred;
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if(user.getCredentials() != null) {</span>
+<span class="nc" id="L126">            userCred = credentialsRepository.findByemailId(user.getEmailId());</span>
+        } else {
+<span class="nc" id="L128">            userCred = new Credentials(request.getEmailId(), request.getPasswordId());</span>
+        }
+        
+        // Update user's name, emailId, and passwordId with the new data
+<span class="nc" id="L132">        user.setName(request.getName());</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if(user.getCredentials() == null) {</span>
+<span class="nc" id="L134">            user.setCredentials(userCred);</span>
+        }
+<span class="nc" id="L136">        user.setEmailId(request.getEmailId());</span>
+<span class="nc" id="L137">        user.setPasswordId(request.getPasswordId());</span>
+<span class="nc" id="L138">        userCred.setUser(user);</span>
+<span class="nc" id="L139">        credentialsRepository.save(userCred);</span>
+
+<span class="nc" id="L141">        user.setJoiningDate(new Date());</span>
+<span class="nc" id="L142">        user.setEmailId(request.getEmailId());</span>
+<span class="nc" id="L143">        user.setPasswordId(hashPassword(request.getPasswordId()));</span>
+<span class="nc" id="L144">        user.setJoiningDate(request.getJoiningDate());</span>
+<span class="nc" id="L145">        user.setActive(request.getIsActive());</span>
+<span class="nc" id="L146">        user.setPhone(request.getPhone());</span>
+<span class="nc" id="L147">        user.setPostCode(request.getPostCode());</span>
+<span class="nc" id="L148">        user.setAddress(request.getAddress());</span>
+<span class="nc" id="L149">        user.setAptNum(request.getAptNum());</span>
+<span class="nc" id="L150">        user.setIsManager(request.getIsManager());</span>
+<span class="nc" id="L151">        user.setIsAdmin(request.getIsAdmin());</span>
+
+        // Save the updated user object
+<span class="nc" id="L154">        userRepository.save(user);</span>
+
+        // Return the updated user
+<span class="nc" id="L157">        return user;</span>
+    }
+
+    @Operation(summary = &quot;Edit a specific user's details given their email&quot;)
+    @PutMapping(&quot;/users/account/{email}&quot;)
+    String updateUserViaEmail(@PathVariable String email, @RequestBody User request){
+<span class="nc" id="L163">        Credentials userCred = credentialsRepository.findByemailId(email);</span>
+<span class="nc" id="L164">        User user = userRepository.findBycredentials(userCred);</span>
+
+        // Check if the user exists
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L168">            return null; // User not found, return null</span>
+        }
+
+        try {
+            // Update user's name with the new data
+<span class="nc" id="L173">            user.setName(request.getName());</span>
+<span class="nc" id="L174">            user.setPhone(request.getPhone());</span>
+<span class="nc" id="L175">            user.setPostCode(request.getPostCode());</span>
+<span class="nc" id="L176">            user.setAddress(request.getAddress());</span>
+
+            // Save the updated user object
+<span class="nc" id="L179">            userRepository.save(user);</span>
+<span class="nc" id="L180">        } catch (Exception e) {</span>
+<span class="nc" id="L181">            return &quot;failure&quot;;</span>
+<span class="nc" id="L182">        }</span>
+        // Return the updated user
+<span class="nc" id="L184">        return &quot;success&quot;;</span>
+    }
+
+    @Operation(summary = &quot;Get the room of a specific user&quot;)
+    @GetMapping(path = &quot;/users/{id}/room&quot;)
+    public Room getRoomByUserId(@PathVariable int id, @RequestBody User user) {
+<span class="nc" id="L190">        user = userRepository.findById(id);</span>
+<span class="nc" id="L191">        return user.getRoom();</span>
+    }
+
+    @Operation(summary = &quot;Assign a room to a user&quot;)
+    @PutMapping(&quot;/users/{userId}/rooms/{roomId}&quot;)
+    public String assignRoomToUser(@PathVariable int userId, @PathVariable int roomId){
+<span class="nc" id="L197">        User user = userRepository.findById(userId);</span>
+<span class="nc" id="L198">        Room room = roomRepository.findById(roomId);</span>
+<span class="nc bnc" id="L199" title="All 4 branches missed.">        if(user == null || room == null)</span>
+<span class="nc" id="L200">            return failure;</span>
+<span class="nc" id="L201">        room.addUser(user);</span>
+<span class="nc" id="L202">        user.setRoom(room);</span>
+<span class="nc" id="L203">        userRepository.save(user);</span>
+<span class="nc" id="L204">        return success;</span>
+    }
+
+
+    @Operation(summary = &quot;Assign a package to a user&quot;)
+    @PutMapping(&quot;/users/{userId}/packages/{packageId}&quot;)
+    public String assignPackageToUser(@PathVariable int userId,@PathVariable int packageId){
+<span class="nc" id="L211">        User user = userRepository.findById(userId);</span>
+<span class="nc" id="L212">        Package pkg = packageRepository.findById(packageId);</span>
+<span class="nc bnc" id="L213" title="All 4 branches missed.">        if(user == null || pkg == null)</span>
+<span class="nc" id="L214">            return failure;</span>
+<span class="nc" id="L215">        pkg.setUser(user);</span>
+<span class="nc" id="L216">        user.addPackages(pkg);</span>
+<span class="nc" id="L217">        userRepository.save(user);</span>
+<span class="nc" id="L218">        return success;</span>
+    }
+
+    @Operation(summary = &quot;(Admin Only) Delete a specific user via id&quot;)
+    @DeleteMapping(path = &quot;/users/{id}&quot;)
+    @Transactional
+    void deleteUser(@PathVariable int id) throws ExecutionException, InterruptedException {
+<span class="nc" id="L225">        User user = userRepository.findById(id);</span>
+<span class="nc" id="L226">        Credentials userCred = credentialsRepository.findByemailId(user.getEmailId());</span>
+<span class="nc" id="L227">        credentialsRepository.delete(userCred);</span>
+<span class="nc" id="L228">        userRepository.deleteById(id);</span>
+<span class="nc" id="L229">    }</span>
+
+    @Operation(summary = &quot;Delete a specific user via email&quot;)
+    @DeleteMapping(path = &quot;/users/delete/{email}&quot;)
+    @Transactional
+    public void deleteUser(@PathVariable String email){
+
+<span class="nc" id="L236">        Credentials userCred = credentialsRepository.findByemailId(email);</span>
+<span class="nc" id="L237">        User user = userRepository.findBycredentials(userCred);</span>
+<span class="nc" id="L238">        List&lt;Package&gt; userPackages = user.getPackages();</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        for (Package userPackage : userPackages) {</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">            if (userPackage != null) {</span>
+<span class="nc" id="L241">                deleteAPackage(userPackage.getid());</span>
+            }
+<span class="nc" id="L243">        }</span>
+<span class="nc" id="L244">        credentialsRepository.deleteByemailId(userCred.getEmailId());</span>
+<span class="nc" id="L245">        userRepository.deleteById(user.getId());</span>
+<span class="nc" id="L246">    }</span>
+
+    public static String getChatUser() {
+<span class="nc" id="L249">        return chatUser;</span>
+    }
+
+    public static void setChatUser(String user) {
+<span class="nc" id="L253">         chatUser = user;</span>
+<span class="nc" id="L254">    }</span>
+
+    public void deleteAPackage(int id){
+<span class="nc" id="L257">        Package pkg = packageRepository.findById(id);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        if(pkg != null) {</span>
+<span class="nc" id="L259">            packageRepository.delete(pkg);</span>
+        }
+<span class="nc" id="L261">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

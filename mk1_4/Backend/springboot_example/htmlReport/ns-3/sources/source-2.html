@@ -1,0 +1,248 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > CredentialsController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">onetomany.Credentials</a>
+</div>
+
+<h1>Coverage Summary for Class: CredentialsController (onetomany.Credentials)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CredentialsController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/58)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package onetomany.Credentials;
+&nbsp;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import jakarta.persistence.NonUniqueResultException;
+&nbsp;import jakarta.transaction.Transactional;
+&nbsp;import onetomany.Users.User;
+&nbsp;import onetomany.Users.UserController;
+&nbsp;import onetomany.Users.UserRepository;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.security.MessageDigest;
+&nbsp;import java.security.NoSuchAlgorithmException;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;import static onetomany.Credentials.Credentials.hashPassword;
+&nbsp;
+&nbsp;@RestController
+&nbsp;public class CredentialsController {
+&nbsp;    @Autowired
+&nbsp;    UserRepository userRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    CredentialsRepository credentialsRepository;
+&nbsp;
+<b class="nc">&nbsp;    public CredentialsController(CredentialsRepository credentialsRepository) {</b>
+<b class="nc">&nbsp;        this.credentialsRepository = credentialsRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // =============================== Mappings ================================== //
+&nbsp;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Find login information by logging in&quot;)
+&nbsp;    @GetMapping(&quot;/account/info&quot;)
+&nbsp;    public String getCredentials(@RequestBody Map&lt;String, String&gt; requestBody) {
+<b class="nc">&nbsp;        String emailId = requestBody.get(&quot;emailId&quot;);</b>
+<b class="nc">&nbsp;        String password = hashPassword(requestBody.get(&quot;passwordId&quot;));</b>
+<b class="nc">&nbsp;        if(login(requestBody).equals(&quot;success&quot;)) {</b>
+<b class="nc">&nbsp;            return (emailId + &quot; &quot; + password);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return &quot;failure&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;(Admin Only)Find login information of everyone&quot;)
+&nbsp;    @GetMapping(&quot;/accounts&quot;)
+&nbsp;    public List&lt;Credentials&gt; getCredentialsAll() {
+<b class="nc">&nbsp;        return credentialsRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Log in with an existing account&quot;)
+&nbsp;    @PostMapping(&quot;/login&quot;)
+&nbsp;    public String login(@RequestBody Map&lt;String, String&gt; requestBody) {
+<b class="nc">&nbsp;        String emailId = requestBody.get(&quot;emailId&quot;);</b>
+<b class="nc">&nbsp;        String password = hashPassword(requestBody.get(&quot;passwordId&quot;));</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            Credentials userCred = credentialsRepository.findByemailId(emailId);</b>
+<b class="nc">&nbsp;            if (userCred != null &amp;&amp; userCred.getPasswordId().equals(password)) {</b>
+<b class="nc">&nbsp;                UserController.setChatUser(emailId);</b>
+<b class="nc">&nbsp;                return &quot;success&quot;;</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                return &quot;failure&quot;;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+&nbsp;            // Log the exception or handle it appropriately
+<b class="nc">&nbsp;            return &quot;error&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Change your password&quot;)
+&nbsp;    @PutMapping(&quot;/account/edit/{password}&quot;)
+&nbsp;    public void editCredentials(@PathVariable String password) {
+<b class="nc">&nbsp;        String email = UserController.getChatUser();</b>
+<b class="nc">&nbsp;        Credentials userCred = credentialsRepository.findByemailId(email);</b>
+<b class="nc">&nbsp;        userCred.setPasswordId(hashPassword(password));</b>
+<b class="nc">&nbsp;        credentialsRepository.save(userCred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Create a new adminstrator&quot;)
+&nbsp;    @PutMapping(&quot;/create/admin&quot;)
+&nbsp;    public String setAdmin(@RequestBody Map&lt;String, String&gt; requestBody) {
+<b class="nc">&nbsp;        String emailId = requestBody.get(&quot;emailId&quot;);</b>
+<b class="nc">&nbsp;        String password = hashPassword(requestBody.get(&quot;passwordId&quot;));</b>
+<b class="nc">&nbsp;        if(login(requestBody).equals(&quot;success&quot;)) {</b>
+<b class="nc">&nbsp;            Credentials userCred = credentialsRepository.findByemailId(emailId);</b>
+<b class="nc">&nbsp;            User user = userRepository.findBycredentials(userCred);</b>
+<b class="nc">&nbsp;            user.setIsAdmin(true);</b>
+<b class="nc">&nbsp;            credentialsRepository.save(userCred);</b>
+<b class="nc">&nbsp;            return &quot;success&quot;;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return &quot;failure&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Create a new manager&quot;)
+&nbsp;    @PutMapping(&quot;/create/manager&quot;)
+&nbsp;    public String setManager(@RequestBody Map&lt;String, String&gt; requestBody) {
+<b class="nc">&nbsp;        String emailId = requestBody.get(&quot;emailId&quot;);</b>
+<b class="nc">&nbsp;        String emailId2 = requestBody.get(&quot;ManagerEmailId&quot;);</b>
+<b class="nc">&nbsp;        if(login(requestBody).equals(&quot;success&quot;)) {</b>
+<b class="nc">&nbsp;            Credentials userCred = credentialsRepository.findByemailId(emailId);</b>
+<b class="nc">&nbsp;            User user = userRepository.findBycredentials(userCred);</b>
+<b class="nc">&nbsp;            Credentials userCred2 = credentialsRepository.findByemailId(emailId2);</b>
+<b class="nc">&nbsp;            User user2 = userRepository.findBycredentials(userCred2);</b>
+<b class="nc">&nbsp;            if(user.getIsAdmin()) {</b>
+<b class="nc">&nbsp;                user.setIsManager(true);</b>
+<b class="nc">&nbsp;                credentialsRepository.save(userCred2);</b>
+<b class="nc">&nbsp;                return &quot;success&quot;;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return &quot;failure&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return &quot;failure&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;(Only for admins) Delete credentials for anyone selected&quot;)
+&nbsp;    @DeleteMapping(&quot;/account/delete&quot;)
+&nbsp;    @Transactional
+&nbsp;    public String deleteCredentials(@RequestBody Map&lt;String, String&gt; requestBody) {
+<b class="nc">&nbsp;        String emailToDeleteId = requestBody.get(&quot;emailToDeleteId&quot;);</b>
+<b class="nc">&nbsp;        String emailId = requestBody.get(&quot;emailId&quot;);</b>
+<b class="nc">&nbsp;        if(login(requestBody).equals(&quot;success&quot;)) {</b>
+<b class="nc">&nbsp;            Credentials cred = credentialsRepository.findByemailId(emailId);</b>
+<b class="nc">&nbsp;            Credentials deleteCredId = credentialsRepository.findByemailId(emailToDeleteId);</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                User user = userRepository.findBycredentials(deleteCredId);</b>
+<b class="nc">&nbsp;                if(/*cred.getIsAdmin() || */cred.equals(deleteCredId)) {</b>
+<b class="nc">&nbsp;                    userRepository.delete(user);</b>
+<b class="nc">&nbsp;                    credentialsRepository.delete(deleteCredId);</b>
+<b class="nc">&nbsp;                    return &quot;success&quot;;</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    return &quot;failure&quot;;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            } catch(Exception e) {</b>
+<b class="nc">&nbsp;                return &quot;failure&quot;;</b>
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            return &quot;failure&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-19 19:11</div>
+</div>
+</body>
+</html>

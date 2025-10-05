@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Package Hub</string>
+    <!-- to toggle the open close button of the navigation drawer -->
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="client_id">873853085970-t3rj1t2n4vpuv8b1teeqj50dgstoc4i3.apps.googleusercontent.com</string>
+    <string name="delete_account_confirmation">Are you sure you want to delete your account?</string>
+
+    <string name="linktosite">
+        <a href="file:///android_asset/TermsOfUse.html">By Signing Up, You Agree To Our Terms Of Use</a>
+    </string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="re_password">Re-Password</string>
+    <string name="register">REGISTER</string>
+    <string name="sign_up">Sign up</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_package_history">PackageHistoryActivity</string>
+</resources>

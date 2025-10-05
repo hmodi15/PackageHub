@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ImageController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Images</a> &gt; <span class="el_source">ImageController.java</span></div><h1>ImageController.java</h1><pre class="source lang-java linenums">package onetomany.Images;
+
+import io.swagger.v3.oas.annotations.Operation;
+import onetomany.Labels.LabelRepository;
+import onetomany.Labels.Label_Image;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+@RestController
+<span class="fc" id="L21">public class ImageController {</span>
+
+    // replace this! careful with the operating system in use
+<span class="fc" id="L24">    private static String directory = &quot;../../../../../../../home/benjbart/imgfolder&quot;;//&quot;src/main/resources/imgfolder&quot;;//&quot;\\src\\main\\resources\\imgfolder&quot;;</span>
+
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private LabelRepository labelRepository;
+
+    @Operation(summary = &quot;Get the byte array for the image from the provided Id&quot;)
+    @GetMapping(value = &quot;/images/{id}&quot;, produces = MediaType.IMAGE_JPEG_VALUE)
+    byte[] getImageById(@PathVariable int id) throws IOException {
+<span class="nc" id="L35">        Image image = imageRepository.findById(id);</span>
+<span class="nc" id="L36">        File imageFile = new File(image.getFilePath());</span>
+<span class="nc" id="L37">        return Files.readAllBytes(imageFile.toPath());</span>
+    }
+/*
+    @PostMapping(&quot;images&quot;)
+    public String handleFileUpload(@RequestParam(&quot;image&quot;) MultipartFile imageFile)  {
+
+        try {
+            File destinationFile = new File(directory + File.separator + imageFile.getOriginalFilename());
+            imageFile.transferTo(destinationFile);  // save file to disk
+
+            Image image = new Image();
+            image.setFilePath(destinationFile.getAbsolutePath());
+            imageRepository.save(image);
+
+            return &quot;File uploaded successfully: &quot; + destinationFile.getAbsolutePath();
+        } catch (IOException e) {
+            return &quot;Failed to upload file: &quot; + e.getMessage();
+        }
+    }*/
+
+
+    @Operation(summary = &quot;Process an image from the provided Id with Tesseract and return the string from Tesseract&quot;)
+    @GetMapping(value = &quot;/images/OCR/{id}&quot;)
+    String processImageOCRById(@PathVariable int id) throws IOException {
+<span class="nc" id="L61">        Label_Image image = labelRepository.findById(id);</span>
+<span class="nc" id="L62">        File imageFile = new File(image.getFilePath());</span>
+<span class="nc" id="L63">        Tesseract tesseract = new Tesseract();</span>
+        try {
+            //the path of your 'tessdata' folder
+<span class="nc" id="L66">            tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</span>
+            //inside the extracted file
+<span class="nc" id="L68">            String text = tesseract.doOCR(imageFile);</span>
+            //path of the image file
+            //System.out.print(text);
+<span class="nc" id="L71">            return text;</span>
+        }
+<span class="nc" id="L73">        catch (TesseractException e) {</span>
+<span class="nc" id="L74">            e.printStackTrace();</span>
+        }
+<span class="nc" id="L76">        return null;</span>
+    }
+
+    @Operation(summary = &quot;Process the provided image with Tesseract and return the string from Tesseract&quot;)
+    @PostMapping(&quot;/images&quot;)
+    public String processPackageLabelOCR(@RequestParam(&quot;image&quot;) MultipartFile imageFile)  {
+<span class="nc" id="L82">        Tesseract tesseract = new Tesseract();</span>
+<span class="nc" id="L83">        tesseract.setDatapath(&quot;../../../../../../../usr/share/tesseract/tessdata&quot;);</span>
+
+        try {
+<span class="nc" id="L86">            File destinationFile = new File(directory + File.separator + imageFile.getOriginalFilename());</span>
+<span class="nc" id="L87">            imageFile.transferTo(destinationFile);  // save file to disk</span>
+
+<span class="nc" id="L89">            Image image = new Image();</span>
+<span class="nc" id="L90">            image.setFilePath(destinationFile.getAbsolutePath());</span>
+
+            try {
+<span class="nc" id="L93">                String ocrResult = tesseract.doOCR(destinationFile);</span>
+                //Some things to sort out the specific text from the result
+<span class="nc" id="L95">                return ocrResult;</span>
+<span class="nc" id="L96">            } catch (TesseractException e) {</span>
+<span class="nc" id="L97">                e.printStackTrace();</span>
+            }
+
+<span class="nc" id="L100">        } catch (IOException e) {</span>
+<span class="nc" id="L101">            return &quot;Failed to upload file: &quot; + e.getMessage();</span>
+<span class="nc" id="L102">        }</span>
+<span class="nc" id="L103">        return null;</span>
+    }
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BuildingController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Buildings</a> &gt; <span class="el_source">BuildingController.java</span></div><h1>BuildingController.java</h1><pre class="source lang-java linenums">package onetomany.Buildings;
+
+
+import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
+import onetomany.Users.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ *
+ * @author Harsh Modi
+ *
+ */
+
+@RestController
+<span class="fc" id="L18">public class BuildingController {</span>
+
+    @Autowired
+    BuildingRepository buildingRepository;
+
+<span class="fc" id="L23">    private String success = &quot;{\&quot;message\&quot;:\&quot;success\&quot;}&quot;;</span>
+<span class="fc" id="L24">    private String failure = &quot;{\&quot;message\&quot;:\&quot;failure\&quot;}&quot;;</span>
+
+    @Operation(summary = &quot;Get a list of all the buildings&quot;)
+    @GetMapping(path = &quot;/buildings&quot;)
+    List&lt;Buildings&gt; getAllUsers(){
+<span class="nc" id="L29">        return buildingRepository.findAll();</span>
+    }
+
+    @Operation(summary = &quot;Get information about a specific building&quot;)
+    @GetMapping(path = &quot;/buildings/{id}&quot;)
+    Buildings getUserById( @PathVariable int id){
+<span class="nc" id="L35">        return buildingRepository.findById(id);</span>
+    }
+
+    @Operation(summary = &quot;Create a new building&quot;)
+    @PostMapping(&quot;/buildings/&quot;)
+    String createBuilding(@RequestBody Buildings building){
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if(building == null) {return failure;}</span>
+
+<span class="nc" id="L43">        buildingRepository.save(building);</span>
+<span class="nc" id="L44">        return success;</span>
+    }
+
+    @Operation(summary = &quot;Edit a current building's information&quot;)
+    @PutMapping(&quot;/buildings/{id}&quot;)
+    String updateBuilding(@PathVariable int id, @RequestBody Buildings request){
+<span class="nc" id="L50">        Buildings user = buildingRepository.findById(id);</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if(user == null) {return failure;}</span>
+<span class="nc" id="L52">        buildingRepository.save(request);</span>
+<span class="nc" id="L53">        return success;</span>
+    }
+
+    @Operation(summary = &quot;Delete an existing building&quot;)
+    @DeleteMapping(path = &quot;/buildings/{id}&quot;)
+    String deleteBuilding(@PathVariable int id){
+<span class="nc" id="L59">        Buildings building = buildingRepository.findById(id);</span>
+<span class="nc" id="L60">        buildingRepository.delete(building);</span>
+<span class="nc" id="L61">        return success;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

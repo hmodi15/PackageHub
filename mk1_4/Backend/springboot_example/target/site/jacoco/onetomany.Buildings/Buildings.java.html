@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Buildings.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Buildings</a> &gt; <span class="el_source">Buildings.java</span></div><h1>Buildings.java</h1><pre class="source lang-java linenums">package onetomany.Buildings;
+
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import onetomany.Packages.Package;
+import onetomany.Rooms.Room;
+
+@Entity
+public class Buildings {
+
+    /*
+     * The annotation @ID marks the field below as the primary key for the table created by springboot
+     * The @GeneratedValue generates a value if not already present, The strategy in this case is to start from 1 and increment for each table
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private String name;
+    // @Column(name = &quot;is_active&quot;)
+<span class="pc" id="L23">    private boolean isActive = true;</span>
+    // @Column(name = &quot;if_active&quot;)
+    // private boolean ifActive = true;
+    @OneToMany(mappedBy = &quot;building&quot;)
+    private List&lt;Room&gt; rooms;
+
+    /*
+     * @OneToOne creates a relation between the current entity/table(Laptop) with the entity/table defined below it(User), the cascade option tells springboot
+     * to create the child entity if not present already (in this case it is laptop)
+     * @JoinColumn specifies the ownership of the key i.e. The User table will contain a foreign key from the laptop table and the column name will be laptop_id
+     */
+
+
+    /*
+     * @OneToMany tells springboot that one instance of User can map to multiple instances of Phone OR one user row can map to multiple rows of the phone table
+     */
+
+    // =============================== Constructors ================================== //
+
+<span class="fc" id="L42">    public Buildings() {</span>
+<span class="fc" id="L43">        this.rooms = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L44">    }</span>
+
+<span class="nc" id="L46">    public Buildings(String name, int id) {</span>
+<span class="nc" id="L47">        this.name = name;</span>
+<span class="nc" id="L48">        this.id = id;</span>
+<span class="nc" id="L49">        this.isActive = true;</span>
+<span class="nc" id="L50">        this.rooms = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L51">    }</span>
+
+
+
+    // =============================== Getters and Setters for each field ================================== //
+
+
+    public int getId(){
+<span class="nc" id="L59">        return id;</span>
+    }
+
+    public void setId(int id){
+<span class="nc" id="L63">        this.id = id;</span>
+<span class="nc" id="L64">    }</span>
+
+    public String getName(){
+<span class="nc" id="L67">        return name;</span>
+    }
+
+    public void setName(String name){
+<span class="nc" id="L71">        this.name = name;</span>
+<span class="nc" id="L72">    }</span>
+
+    public boolean getIsActive(){
+<span class="nc" id="L75">        return isActive;</span>
+    }
+
+    public void setIsActive(boolean isActive){
+<span class="nc" id="L79">        this.isActive = isActive;</span>
+<span class="nc" id="L80">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

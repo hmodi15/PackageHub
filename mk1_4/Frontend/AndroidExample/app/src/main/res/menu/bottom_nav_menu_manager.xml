@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Home"
+        android:icon="@drawable/baseline_home_24"
+        android:id="@+id/managerNav_home"/>
+    <item
+        android:id="@+id/managerNav_scan"
+        android:icon="@drawable/baseline_camera_24"
+        android:title="Scan" />
+    <item android:title="Settings"
+        android:icon="@drawable/baseline_engineering_24"
+        android:id="@+id/managerNav_settings"/>
+</menu>

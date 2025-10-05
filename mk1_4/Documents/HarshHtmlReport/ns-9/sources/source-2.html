@@ -1,0 +1,319 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > UserController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">onetomany.Users</a>
+</div>
+
+<h1>Coverage Summary for Class: UserController (onetomany.Users)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UserController</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (25/75)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UserController$$SpringCGLIB$$0</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (25/75)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package onetomany.Users;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import jakarta.persistence.NonUniqueResultException;
+&nbsp;import onetomany.Credentials.Credentials;
+&nbsp;import onetomany.Credentials.CredentialsRepository;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import jakarta.transaction.Transactional;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import onetomany.Rooms.Room;
+&nbsp;import onetomany.Rooms.RoomRepository;
+&nbsp;import onetomany.Packages.Package;
+&nbsp;import onetomany.Packages.PackageRepository;
+&nbsp;
+&nbsp;import static onetomany.Credentials.Credentials.hashPassword;
+&nbsp;
+&nbsp;
+&nbsp;/**
+&nbsp; *
+&nbsp; * @author Benjimin Bartels and Harsh Modi
+&nbsp; *
+&nbsp; */
+&nbsp;
+&nbsp;@RestController
+&nbsp;public class UserController {
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    UserRepository userRepository;
+&nbsp;    @Autowired
+&nbsp;    RoomRepository roomRepository;
+&nbsp;    @Autowired
+&nbsp;    PackageRepository packageRepository;
+&nbsp;    @Autowired
+&nbsp;    CredentialsRepository credentialsRepository;
+&nbsp;
+<b class="fc">&nbsp;    private String success = &quot;{\&quot;message\&quot;:\&quot;success\&quot;}&quot;;</b>
+<b class="fc">&nbsp;    private String failure = &quot;{\&quot;message\&quot;:\&quot;failure\&quot;}&quot;;</b>
+&nbsp;    private static String chatUser;
+&nbsp;
+<b class="fc">&nbsp;    public UserController(UserRepository userRepository, CredentialsRepository credentialsRepository) {</b>
+<b class="fc">&nbsp;        this.userRepository = userRepository;</b>
+<b class="fc">&nbsp;        this.credentialsRepository = credentialsRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // =============================== Mappings ================================== //
+&nbsp;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get a list of all the users&quot;)
+&nbsp;    @GetMapping(path = &quot;/users&quot;)
+&nbsp;    public List&lt;User&gt; getAllUsers(){
+<b class="nc">&nbsp;        return userRepository.findAll();</b>
+&nbsp;    }
+&nbsp;    @Operation(summary = &quot;Get a specific user&quot;)
+&nbsp;    @GetMapping(path = &quot;/users/{id}&quot;)
+&nbsp;    public User getUserById( @PathVariable int id){
+<b class="fc">&nbsp;        return userRepository.findById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get a specific user&#39;s details given their email&quot;)
+&nbsp;    @GetMapping(path = &quot;/account/{email}&quot;)
+&nbsp;    public User getUserByEmail(@PathVariable String email) {
+<b class="fc">&nbsp;        Credentials userCred = credentialsRepository.findByemailId(email);</b>
+<b class="fc">&nbsp;        return userRepository.findBycredentials(userCred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get the list of packages of a specific user&quot;)
+&nbsp;    @GetMapping(path = &quot;/users/{id}/packages&quot;)
+&nbsp;    public List&lt;Package&gt; getPackagesByUserId(@PathVariable int id, User user){
+<b class="nc">&nbsp;        user = userRepository.findById(id);</b>
+<b class="nc">&nbsp;        return user.getPackages();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Make a new user that isn&#39;t already in the database&quot;)
+&nbsp;    @PostMapping(path = &quot;/users&quot;)
+&nbsp;    public String createUser(@RequestBody User user){
+<b class="fc">&nbsp;        if(user == null || !user.getEmailId().contains(&quot;@&quot;) || !user.getEmailId().contains(&quot;.&quot;)) {</b>
+<b class="fc">&nbsp;            return &quot;failure&quot;;</b>
+&nbsp;        }
+&nbsp;        try {
+<b class="fc">&nbsp;            if(credentialsRepository.findByemailId(user.getEmailId()).getEmailId().equals(user.getEmailId())) {</b>
+<b class="fc">&nbsp;                return &quot;failure&quot;;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            user.setPasswordId(hashPassword(user.getPasswordId()));</b>
+<b class="nc">&nbsp;            Credentials userCred = new Credentials(user.getEmailId(), user.getPasswordId());</b>
+<b class="nc">&nbsp;            credentialsRepository.save(userCred);</b>
+<b class="nc">&nbsp;            userRepository.save(user);</b>
+<b class="nc">&nbsp;            return success;</b>
+<b class="nc">&nbsp;        } catch (NonUniqueResultException e) {</b>
+&nbsp;            // Handle non-unique result exception
+<b class="nc">&nbsp;            return &quot;failure&quot;; // Return a specific message indicating a non-unique result</b>
+<b class="fc">&nbsp;        } catch (Exception e) {</b>
+&nbsp;            // Log the exception or handle it appropriately
+<b class="fc">&nbsp;            user.setPasswordId(hashPassword(user.getPasswordId()));</b>
+<b class="fc">&nbsp;            Credentials userCred = new Credentials(user.getEmailId(), user.getPasswordId());</b>
+<b class="fc">&nbsp;            user.setCredentials(userCred);</b>
+<b class="fc">&nbsp;            userRepository.save(user);</b>
+<b class="fc">&nbsp;            return success;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Edit a specific user&#39;s details&quot;)
+&nbsp;    @PutMapping(&quot;/users/{id}&quot;)
+&nbsp;    public User updateUser(@PathVariable int id, @RequestBody User request){
+<b class="nc">&nbsp;        User user = userRepository.findById(id);</b>
+&nbsp;
+&nbsp;        // Check if the user exists
+<b class="nc">&nbsp;        if (user == null) {</b>
+<b class="nc">&nbsp;            return null; // User not found, return null</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Update user&#39;s name, emailId, and passwordId with the new data
+<b class="nc">&nbsp;        user.setName(request.getName());</b>
+<b class="nc">&nbsp;        Credentials cred = new Credentials(request.getEmailId(), request.getPasswordId());</b>
+<b class="nc">&nbsp;        if(user.getCredentials() == null) {</b>
+<b class="nc">&nbsp;            user.setCredentials(cred);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        user.setEmailId(request.getEmailId());</b>
+<b class="nc">&nbsp;        user.setPasswordId(hashPassword(request.getPasswordId()));</b>
+&nbsp;
+&nbsp;        // Save the updated user object
+<b class="nc">&nbsp;        userRepository.save(user);</b>
+&nbsp;
+&nbsp;        // Return the updated user
+<b class="nc">&nbsp;        return user;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get the room of a specific user&quot;)
+&nbsp;    @GetMapping(path = &quot;/users/{id}/room&quot;)
+&nbsp;    public Room getRoomByUserId(@PathVariable int id, @RequestBody User user) {
+<b class="nc">&nbsp;        user = userRepository.findById(id);</b>
+<b class="nc">&nbsp;        return user.getRoom();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Assign a room to a user&quot;)
+&nbsp;    @PutMapping(&quot;/users/{userId}/rooms/{roomId}&quot;)
+&nbsp;    public String assignRoomToUser(@PathVariable int userId, @PathVariable int roomId){
+<b class="nc">&nbsp;        User user = userRepository.findById(userId);</b>
+<b class="nc">&nbsp;        Room room = roomRepository.findById(roomId);</b>
+<b class="nc">&nbsp;        if(user == null || room == null)</b>
+<b class="nc">&nbsp;            return failure;</b>
+<b class="nc">&nbsp;        room.addUser(user);</b>
+<b class="nc">&nbsp;        user.setRoom(room);</b>
+<b class="nc">&nbsp;        userRepository.save(user);</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Assign a package to a user&quot;)
+&nbsp;    @PutMapping(&quot;/users/{userId}/packages/{packageId}&quot;)
+&nbsp;    public String assignPackageToUser(@PathVariable int userId,@PathVariable int packageId){
+<b class="nc">&nbsp;        User user = userRepository.findById(userId);</b>
+<b class="nc">&nbsp;        Package pkg = packageRepository.findById(packageId);</b>
+<b class="nc">&nbsp;        if(user == null || pkg == null)</b>
+<b class="nc">&nbsp;            return failure;</b>
+<b class="nc">&nbsp;        pkg.setUser(user);</b>
+<b class="nc">&nbsp;        user.addPackages(pkg);</b>
+<b class="nc">&nbsp;        userRepository.save(user);</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;(Admin Only) Delete a specific user via id&quot;)
+&nbsp;    @DeleteMapping(path = &quot;/users/{id}&quot;)
+&nbsp;    @Transactional
+&nbsp;    public void deleteUser(@PathVariable int id){
+<b class="nc">&nbsp;        User user = userRepository.findById(id);</b>
+<b class="nc">&nbsp;        Credentials userCred = credentialsRepository.findByemailId(user.getEmailId());</b>
+<b class="nc">&nbsp;        credentialsRepository.delete(userCred);</b>
+<b class="nc">&nbsp;        userRepository.deleteById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Delete a specific user via email&quot;)
+&nbsp;    @DeleteMapping(path = &quot;/users/delete/{email}&quot;)
+&nbsp;    @Transactional
+&nbsp;    public void deleteUser(@PathVariable String email){
+<b class="fc">&nbsp;        Credentials userCred = credentialsRepository.findByemailId(email);</b>
+<b class="fc">&nbsp;        User user = userRepository.findBycredentials(userCred);</b>
+<b class="fc">&nbsp;        List&lt;Package&gt; userPackages = user.getPackages();</b>
+<b class="fc">&nbsp;        for (Package userPackage : userPackages) {</b>
+<b class="nc">&nbsp;            if (userPackage != null) {</b>
+<b class="nc">&nbsp;                deleteAPackage(userPackage.getid());</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="fc">&nbsp;        credentialsRepository.deleteByemailId(userCred.getEmailId());</b>
+<b class="fc">&nbsp;        userRepository.deleteById(user.getId());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String getChatUser() {
+<b class="nc">&nbsp;        return chatUser;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void setChatUser(String user) {
+<b class="fc">&nbsp;         chatUser = user;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void deleteAPackage(int id){
+<b class="nc">&nbsp;        Package pkg = packageRepository.findById(id);</b>
+<b class="nc">&nbsp;        if(pkg != null) {</b>
+<b class="nc">&nbsp;            packageRepository.delete(pkg);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-22 10:53</div>
+</div>
+</body>
+</html>

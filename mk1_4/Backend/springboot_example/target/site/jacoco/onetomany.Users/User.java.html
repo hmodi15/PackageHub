@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">one-to-one</a> &gt; <a href="index.source.html" class="el_package">onetomany.Users</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">package onetomany.Users;
+
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+
+import onetomany.Credentials.Credentials;
+import onetomany.Feedback.FeedbackEntity;
+import onetomany.Packages.Package;
+import onetomany.Rooms.Room;
+
+import javax.print.attribute.standard.DateTimeAtCreation;
+
+/***
+ * Users class that contains information about the user in each column of its table
+ */
+
+/**
+ * @author Harsh Modi
+ */
+@Entity
+@JsonIgnoreProperties(&quot;credentials&quot;) // Ignore the 'credentials' field during JSON serialization
+public class User {
+
+    /*
+     * The annotation @ID marks the field below as the primary key for the table created by springboot
+     * The @GeneratedValue generates a value if not already present, The strategy in this case is to start from 1 and increment for each table
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private String name;
+    private Date joiningDate;
+<span class="nc" id="L39">    private boolean isActive = true;</span>
+    private String address;
+    private String phone;
+    private String postCode;
+    private String aptNum;
+
+<span class="nc" id="L45">    @Column</span>
+<span class="nc" id="L46">    private Boolean is_manager = false;</span>
+
+<span class="nc" id="L48">    @Column</span>
+<span class="nc" id="L49">    private Boolean is_admin = false;</span>
+
+     //@OneToMany tells springboot that one instance of User can map to multiple
+     //instances of Package OR one user row can map to multiple rows of the package table
+<span class="nc" id="L53">     @OneToMany(mappedBy = &quot;user&quot;, cascade = CascadeType.ALL)</span>
+     private List&lt;Package&gt; packages = new ArrayList&lt;&gt;();
+
+    @ManyToOne
+    @JoinColumn(name = &quot;room_id&quot;, updatable = true)
+    @JsonIgnore
+    private Room room;
+
+<span class="nc" id="L61">    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL})</span>
+    @JoinColumn
+    private Credentials credentials = new Credentials(&quot;0&quot; , &quot;0&quot;);
+
+<span class="nc" id="L65">    @OneToMany(mappedBy = &quot;user&quot;, cascade = CascadeType.ALL)</span>
+    private List&lt;FeedbackEntity&gt; ratings = new ArrayList&lt;&gt;();
+
+
+    // =============================== Constructors ================================== //
+
+
+<span class="nc" id="L72">    public User(String name, String emailId, String passwordId, String address, String phone, String postCode) {</span>
+<span class="nc" id="L73">        setId(id);</span>
+<span class="nc" id="L74">        setName(name);</span>
+<span class="nc" id="L75">        setJoiningDate(new Date());</span>
+<span class="nc" id="L76">        setActive(true);</span>
+<span class="nc" id="L77">        setAddress(address);</span>
+<span class="nc" id="L78">        setPhone(phone);</span>
+<span class="nc" id="L79">        setPostCode(postCode);</span>
+<span class="nc" id="L80">        packages = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L81">        setEmailId(emailId);</span>
+<span class="nc" id="L82">        setPasswordId(passwordId);</span>
+<span class="nc" id="L83">        credentials.setUser(this);</span>
+<span class="nc" id="L84">        this.is_admin = false;</span>
+<span class="nc" id="L85">        this.is_manager = false;</span>
+<span class="nc" id="L86">        ratings = new ArrayList&lt;FeedbackEntity&gt;();</span>
+<span class="nc" id="L87">    }</span>
+
+<span class="nc" id="L89">    public User() {</span>
+<span class="nc" id="L90">        setId(id);</span>
+<span class="nc" id="L91">        setName(&quot;&quot;);</span>
+<span class="nc" id="L92">        setAddress(&quot;&quot;);</span>
+<span class="nc" id="L93">        setPhone(&quot;&quot;);</span>
+<span class="nc" id="L94">        setPostCode(&quot;&quot;);</span>
+<span class="nc" id="L95">        setJoiningDate(new Date());</span>
+<span class="nc" id="L96">        packages = new ArrayList&lt;Package&gt;();</span>
+<span class="nc" id="L97">        credentials = new Credentials(&quot;&quot;,&quot;&quot;);</span>
+<span class="nc" id="L98">        credentials.setUser(this);</span>
+<span class="nc" id="L99">        this.is_admin = false;</span>
+<span class="nc" id="L100">        this.is_manager = false;</span>
+<span class="nc" id="L101">        ratings = new ArrayList&lt;FeedbackEntity&gt;();</span>
+<span class="nc" id="L102">    }</span>
+
+
+    // =============================== Getters and Setters for each field ================================== //
+
+
+    public int getId(){
+<span class="nc" id="L109">        return id;</span>
+    }
+
+    public void setId(int id){
+<span class="nc" id="L113">        this.id = id;</span>
+<span class="nc" id="L114">    }</span>
+
+    public String getName(){
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if(name != null) {</span>
+<span class="nc" id="L118">            return name;</span>
+        } else {
+<span class="nc" id="L120">            return &quot;&quot;;</span>
+        }
+    }
+
+    public void setName(String name){
+<span class="nc" id="L125">        this.name = name;</span>
+<span class="nc" id="L126">    }</span>
+
+    public Date getJoiningDate(){
+<span class="nc" id="L129">        return joiningDate;</span>
+    }
+
+    public void setJoiningDate(Date joiningDate){
+<span class="nc" id="L133">        this.joiningDate = joiningDate;</span>
+<span class="nc" id="L134">    }</span>
+
+    public boolean getIsActive(){
+<span class="nc" id="L137">        return isActive;</span>
+    }
+
+    public void setActive(boolean active){
+<span class="nc" id="L141">        this.isActive = active;</span>
+<span class="nc" id="L142">    }</span>
+
+    public List&lt;Package&gt; getPackages() {
+<span class="nc" id="L145">        return packages;</span>
+    }
+
+    public List&lt;Package&gt; getAwaitingPackages(){
+<span class="nc" id="L149">        List&lt;Package&gt; usersPackages= packages;</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        usersPackages.removeIf(pkg -&gt; pkg.getPickUpStatus() == true);</span>
+<span class="nc" id="L151">        return usersPackages;</span>
+    }
+
+    public void setPackages(List&lt;Package&gt; packages) {
+<span class="nc" id="L155">        this.packages = packages;</span>
+<span class="nc" id="L156">    }</span>
+
+    public void addPackages(Package pkg){
+<span class="nc" id="L159">        this.packages.add(pkg);</span>
+<span class="nc" id="L160">    }</span>
+
+    public Room getRoom(){
+<span class="nc" id="L163">        return room;</span>
+    }
+
+    public void setRoom(Room room){
+<span class="nc" id="L167">        this.room = room;</span>
+<span class="nc" id="L168">    }</span>
+
+    public String getEmailId() {
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (this.credentials != null) {</span>
+<span class="nc" id="L172">            return this.credentials.getEmailId();</span>
+        } else {
+<span class="nc" id="L174">            return null; // Or handle the null case accordingly</span>
+        }
+    }
+
+    public void setEmailId(String emailId) {
+<span class="nc" id="L179">        this.credentials.setEmailId(emailId);</span>
+<span class="nc" id="L180">    }</span>
+
+    public String getPasswordId() {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (this.credentials != null) {</span>
+<span class="nc" id="L184">            return this.credentials.getPasswordId();</span>
+        } else {
+<span class="nc" id="L186">            return null; // Or handle the null case accordingly</span>
+        }
+    }
+
+    public void setPasswordId(String passwordId) {
+<span class="nc" id="L191">        this.credentials.setPasswordId(passwordId);</span>
+<span class="nc" id="L192">    }</span>
+
+    public Credentials getCredentials() {
+<span class="nc" id="L195">        return this.credentials;</span>
+    }
+
+    public void setCredentials(Credentials cred){
+<span class="nc" id="L199">        this.credentials = cred;</span>
+<span class="nc" id="L200">    }</span>
+
+    public String getAddress() {
+<span class="nc" id="L203">        return this.address;</span>
+    }
+
+    public String getPhone() {
+<span class="nc" id="L207">        return this.phone;</span>
+    }
+
+    public String getPostCode() {
+<span class="nc" id="L211">        return this.postCode;</span>
+    }
+
+    public void setPostCode(String postCode) {
+<span class="nc" id="L215">        this.postCode = postCode;</span>
+<span class="nc" id="L216">    }</span>
+
+    public void setPhone(String phone) {
+<span class="nc" id="L219">        this.phone = phone;</span>
+<span class="nc" id="L220">    }</span>
+
+    public void setAddress(String address) {
+<span class="nc" id="L223">        this.address = address;</span>
+<span class="nc" id="L224">    }</span>
+
+    public Boolean getIsManager() {
+<span class="nc" id="L227">        return is_manager;</span>
+    }
+
+    public void setIsManager(Boolean b) {
+<span class="nc" id="L231">        this.is_manager = b;</span>
+<span class="nc" id="L232">    }</span>
+
+    public Boolean getIsAdmin() {
+<span class="nc" id="L235">        return is_admin;</span>
+    }
+
+    public void setIsAdmin(Boolean b) {
+<span class="nc" id="L239">        this.is_admin = b;</span>
+<span class="nc" id="L240">    }</span>
+
+    public String getAptNum() {
+<span class="nc" id="L243">        return aptNum;</span>
+    }
+
+    public void setAptNum(String aptNum) {
+<span class="nc" id="L247">        this.aptNum = aptNum;</span>
+<span class="nc" id="L248">    }</span>
+
+
+    // =============================== Special Functions ================================== //
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

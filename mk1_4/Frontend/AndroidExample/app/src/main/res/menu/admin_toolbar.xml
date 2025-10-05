@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn = "navigation_view">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/baseline_home_24"
+        android:title="Home" />
+    <item
+        android:id="@+id/nav_buildings"
+        android:icon="@drawable/baseline_apartment_24"
+        android:title="Show Managable Buildings" />
+    <item
+        android:id="@+id/nav_rooms"
+        android:icon="@drawable/baseline_door_sliding_24"
+        android:title="Show Rooms" />
+    <item
+        android:id="@+id/nav_users"
+        android:icon="@drawable/groups_fill0_wght400_grad0_opsz24"
+        android:title="Show User List" />
+
+    <item
+        android:id="@+id/add_room"
+        android:icon="@drawable/baseline_add_business_24"
+        android:title="Create New Room" />
+    <item
+        android:id="@+id/add_building"
+        android:icon="@drawable/baseline_domain_add_24"
+        android:title="Create New Building" />
+    <item
+        android:id="@+id/nav_addUser"
+        android:icon="@drawable/baseline_person_add_24"
+        android:title="Manually Create User" />
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/baseline_logout_24"
+        android:title="Logout" />
+</menu>

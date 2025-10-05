@@ -1,0 +1,168 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > BuildingController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">onetomany.Buildings</a>
+</div>
+
+<h1>Coverage Summary for Class: BuildingController (onetomany.Buildings)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuildingController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package onetomany.Buildings;
+&nbsp;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import onetomany.Users.User;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;/**
+&nbsp; *
+&nbsp; * @author Harsh Modi
+&nbsp; *
+&nbsp; */
+&nbsp;
+&nbsp;@RestController
+<b class="nc">&nbsp;public class BuildingController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    BuildingRepository buildingRepository;
+&nbsp;
+<b class="nc">&nbsp;    private String success = &quot;{\&quot;message\&quot;:\&quot;success\&quot;}&quot;;</b>
+<b class="nc">&nbsp;    private String failure = &quot;{\&quot;message\&quot;:\&quot;failure\&quot;}&quot;;</b>
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get a list of all the buildings&quot;)
+&nbsp;    @GetMapping(path = &quot;/buildings&quot;)
+&nbsp;    List&lt;Buildings&gt; getAllUsers(){
+<b class="nc">&nbsp;        return buildingRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Get information about a specific building&quot;)
+&nbsp;    @GetMapping(path = &quot;/buildings/{id}&quot;)
+&nbsp;    Buildings getUserById( @PathVariable int id){
+<b class="nc">&nbsp;        return buildingRepository.findById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Create a new building&quot;)
+&nbsp;    @PostMapping(&quot;/buildings/&quot;)
+&nbsp;    String createBuilding(@RequestBody Buildings building){
+<b class="nc">&nbsp;        if(building == null) {return failure;}</b>
+&nbsp;
+<b class="nc">&nbsp;        buildingRepository.save(building);</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Edit a current building&#39;s information&quot;)
+&nbsp;    @PutMapping(&quot;/buildings/{id}&quot;)
+&nbsp;    String updateBuilding(@PathVariable int id, @RequestBody Buildings request){
+<b class="nc">&nbsp;        Buildings user = buildingRepository.findById(id);</b>
+<b class="nc">&nbsp;        if(user == null) {return failure;}</b>
+<b class="nc">&nbsp;        buildingRepository.save(request);</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(summary = &quot;Delete an existing building&quot;)
+&nbsp;    @DeleteMapping(path = &quot;/buildings/{id}&quot;)
+&nbsp;    String deleteBuilding(@PathVariable int id){
+<b class="nc">&nbsp;        Buildings building = buildingRepository.findById(id);</b>
+<b class="nc">&nbsp;        buildingRepository.delete(building);</b>
+<b class="nc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-19 19:11</div>
+</div>
+</body>
+</html>

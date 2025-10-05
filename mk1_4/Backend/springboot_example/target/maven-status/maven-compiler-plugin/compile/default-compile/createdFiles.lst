@@ -1,0 +1,7 @@
+onetomany\Images\ImageController.class
+onetomany\Labels\LabelRepository.class
+onetomany\Labels\Label_Image.class
+onetomany\Labels\LabelController.class
+onetomany\Images\ImageRepository.class
+onetomany\Images\Image.class
+onetomany\Rooms\RoomController.class
