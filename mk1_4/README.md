@@ -1,93 +1,238 @@
-# MK1_4
+# PackageHub
 
+A comprehensive package management system with Android frontend and Spring Boot backend, developed as part of COMS 309 coursework.
 
+## 📋 Table of Contents
 
-## Getting started
+- [Overview](#overview)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Technologies Used](#technologies-used)
+- [Getting Started](#getting-started)
+- [Backend Setup](#backend-setup)
+- [Frontend Setup](#frontend-setup)
+- [API Documentation](#api-documentation)
+- [Team Members](#team-members)
+- [Experiments](#experiments)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## 🎯 Overview
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+PackageHub is a full-stack application designed to manage package deliveries in residential buildings. The system provides role-based access for residents, managers, and administrators, with features including package tracking, building management, user authentication, and real-time notifications.
 
-## Add your files
+## ✨ Features
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+### Core Functionality
+- **User Management**: Registration, authentication, and role-based access control
+- **Package Tracking**: Add, update, and track package deliveries
+- **Building Management**: Manage buildings, rooms, and residents
+- **Real-time Notifications**: WebSocket-based chat and notifications
+- **Image Processing**: OCR-based package recognition using Tesseract
+- **Social Features**: Media posts and community interactions
+
+### User Roles
+- **Residents**: View and manage their packages
+- **Managers**: Oversee building operations and resident management
+- **Administrators**: Full system access and user management
+
+### Mobile Features
+- **QR Code Scanning**: Quick package identification
+- **Push Notifications**: Real-time updates
+- **Offline Support**: Basic functionality without internet
+- **Dark Mode**: User preference support
+
+## 🏗️ Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://git.las.iastate.edu/cs309/2024spr/mk1_4.git
-git branch -M main
-git push -uf origin main
+mk1_4/
+├── Backend/                    # Spring Boot REST API
+│   └── springboot_example/
+│       ├── src/main/java/      # Java source code
+│       ├── src/main/resources/ # Configuration files
+│       └── pom.xml            # Maven dependencies
+├── Frontend/                   # Android Application
+│   └── AndroidExample/
+│       ├── app/src/main/       # Android source code
+│       ├── app/src/main/res/   # Resources (layouts, drawables)
+│       └── build.gradle        # Gradle configuration
+├── Experiments/                # Team member experiments
+│   ├── BenjaminB/             # Benjamin's experiments
+│   ├── BenjaminS/             # Benjamin's experiments
+│   ├── Harsh/                 # Harsh's experiments
+│   └── Lucas/                 # Lucas's experiments
+└── Documents/                  # Project documentation
+    ├── TestingReports/         # Test coverage reports
+    ├── FrontendJavadocs/       # API documentation
+    └── Design Documents/       # UI/UX designs
 ```
 
-## Integrate with your tools
+## 🛠️ Technologies Used
 
-- [ ] [Set up project integrations](https://git.las.iastate.edu/cs309/2024spr/mk1_4/-/settings/integrations)
+### Backend
+- **Java 17**
+- **Spring Boot 2.7.x**
+- **Spring Data JPA**
+- **Spring WebSocket**
+- **Maven**
+- **H2 Database** (Development)
+- **MySQL** (Production ready)
 
-## Collaborate with your team
+### Frontend
+- **Android SDK**
+- **Java**
+- **Volley** (HTTP requests)
+- **WebSocket** (Real-time communication)
+- **Tesseract OCR** (Text recognition)
+- **Material Design**
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+### Development Tools
+- **IntelliJ IDEA**
+- **Android Studio**
+- **Git**
+- **JaCoCo** (Code coverage)
+- **JUnit** (Testing)
 
-## Test and Deploy
+## 🚀 Getting Started
 
-Use the built-in continuous integration in GitLab.
+### Prerequisites
+- Java 17 or higher
+- Android Studio (latest version)
+- Maven 3.6+
+- Git
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Backend Setup
 
-***
+1. **Navigate to backend directory**
+   ```bash
+   cd Backend/springboot_example
+   ```
 
-# Editing this README
+2. **Install dependencies**
+   ```bash
+   mvn clean install
+   ```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+3. **Run the application**
+   ```bash
+   mvn spring-boot:run
+   ```
 
-## Suggestions for a good README
+   The backend will be available at `http://localhost:8080`
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### Frontend Setup
 
-## Name
-Choose a self-explaining name for your project.
+1. **Open Android Studio**
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+2. **Import the project**
+   - Open Android Studio
+   - Select "Open an existing project"
+   - Navigate to `Frontend/AndroidExample`
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+3. **Sync Gradle**
+   - Android Studio will automatically sync Gradle
+   - Wait for the sync to complete
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+4. **Run the application**
+   - Connect an Android device or start an emulator
+   - Click the "Run" button in Android Studio
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## 📚 API Documentation
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Authentication Endpoints
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/logout` - User logout
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Package Management
+- `GET /api/packages` - Get all packages
+- `POST /api/packages` - Create new package
+- `PUT /api/packages/{id}` - Update package
+- `DELETE /api/packages/{id}` - Delete package
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Building Management
+- `GET /api/buildings` - Get all buildings
+- `POST /api/buildings` - Create new building
+- `GET /api/buildings/{id}/rooms` - Get rooms in building
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### User Management
+- `GET /api/users` - Get all users
+- `GET /api/users/{id}` - Get user by ID
+- `PUT /api/users/{id}` - Update user
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+## 👥 Team Members
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+- **Harsh Modi** - Project Lead & Backend Development
+- **Benjamin Bartels** - Frontend Development & Testing
+- **Benjamin Steenhoek** - Backend Development & API Design
+- **Lucas** - Frontend Development & UI/UX
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+## 🧪 Experiments
 
-## License
-For open source projects, say how it is licensed.
+The `Experiments/` directory contains individual team member projects and learning exercises:
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### BenjaminB Experiments
+- **Exp1_1 to Exp1_3**: Basic Spring Boot setup and REST API development
+- **Exp2_1 to Exp2_5**: Advanced Spring Boot features and database integration
+
+### BenjaminS Experiments
+- **Exp1 to Exp9**: Progressive Android development from basic UI to advanced features
+- **MyExp1**: Custom experiment with unique functionality
+
+### Harsh Experiments
+- **Exp1 to Exp7**: Spring Boot learning progression and full-stack development
+
+### Lucas Experiments
+- **exp1_1 to exp1_3**: Android development fundamentals
+- **exp2_1**: Advanced Android features and API integration
+
+## 🧪 Testing
+
+### Backend Testing
+```bash
+cd Backend/springboot_example
+mvn test
+```
+
+### Frontend Testing
+- Unit tests are located in `app/src/test/`
+- Instrumented tests are in `app/src/androidTest/`
+- Run tests through Android Studio or command line
+
+### Code Coverage
+- JaCoCo reports are generated in `target/site/jacoco/`
+- View coverage reports in `Documents/` directory
+
+## 📱 Screenshots
+
+*Screenshots of the application will be added here*
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow Java coding conventions
+- Write unit tests for new features
+- Update documentation for API changes
+- Use meaningful commit messages
+
+## 📄 License
+
+This project is developed as part of COMS 309 coursework at Iowa State University. All rights reserved.
+
+## 📞 Support
+
+For support and questions:
+- Create an issue in this repository
+- Contact the development team
+- Check the documentation in the `Documents/` folder
+
+---
+
+**Note**: This project is for educational purposes as part of COMS 309 coursework. It demonstrates full-stack development skills using modern technologies and best practices.
